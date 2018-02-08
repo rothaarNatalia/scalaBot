@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 import play.api.libs.json.Json
 
 /**
@@ -16,6 +17,12 @@ case class Handler() {
   implicit val materializer = ActorMaterializer()
   // needed for the future map/flatmap in the end
   implicit val executionContext = system.dispatcher
+
+  val conf = ConfigFactory.load()
+
+  val token = conf.getString("token")
+  val url = conf.getString("url")
+
 
   def requestHandler(rq: HttpRequest): HttpResponse = {
 

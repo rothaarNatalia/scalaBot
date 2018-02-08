@@ -2,7 +2,11 @@ package bot.commands
 
 import java.util.UUID
 
+<<<<<<< HEAD
 import bot.Response
+=======
+import bot.{Response, Vote}
+>>>>>>> b5d785be05fc6c690a71340a44e3cc453106a879
 import bot.commands.CreateVote.Visibility
 
 /**
@@ -35,13 +39,5 @@ case class CreateVote(cmd: String, pars: List[String]) extends Command {
 
 }
 
-object CreateVote {
 
-  object Visibility extends Enumeration {
 
-    type Visibility = Value
-
-    val AFTERSTOP, CONTINIOUS = Value
-  }
-
-}
