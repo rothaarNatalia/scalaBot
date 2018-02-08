@@ -12,7 +12,7 @@ import scala.io.StdIn
   */
 object Bot{
 
-  private val token = ""
+  private val token = "549906144:AAFizyWrcNfep-fxlYT6CZuou1l-hU0rw4s"
   private val endPoint = "https://api.telegram.org/bot"
 
   def main(args: Array[String]) {

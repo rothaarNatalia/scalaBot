@@ -2,7 +2,7 @@ package bot.commands
 
 import java.util.UUID
 
-import bot.{Response, Vote, Votes}
+import bot.Response
 import bot.commands.CreateVote.Visibility
 
 /**
