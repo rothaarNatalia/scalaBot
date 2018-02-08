@@ -3,7 +3,7 @@ package bot
 import java.util.Properties
 
 import bot.commands.{Command, UnknownCommand}
-
+import com.typesafe.config.ConfigFactory
 
 import scala.io.StdIn
 
@@ -14,6 +14,7 @@ object Bot{
 
   private val token = ""
   private val endPoint = "https://api.telegram.org/bot"
+
 
   def main(args: Array[String]) {
 

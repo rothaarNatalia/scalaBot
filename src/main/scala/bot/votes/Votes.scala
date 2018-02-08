@@ -1,4 +1,4 @@
-package bot
+package bot.votes
 
 import java.util.Calendar
 
@@ -7,32 +7,6 @@ import scala.collection.immutable.HashMap
 /**
   * Created by rothaar on 04.02.2018.
   */
-
-case class Vote(uuid: String,
-                owner: String,
-                isAnonymous: Boolean,
-                visibility: String,
-                dateFrom: Calendar,
-                dateTo: Calendar
-               ) {
-
-  private
-
-  var result: Int  = 0
-
-  def voteResult: Int  = {
-
-    ???
-  }
-
-  def deleteQuestion(id: Int) = {}
-
-  def addQuestion(id: Int) = {}
-
-  def vote(id: Int) = {
-
-  }
-}
 
 object Votes {
 
@@ -74,7 +48,7 @@ object Votes {
     if (votes.contains(uuid)) {
       val vote = votes(uuid)
       if ((vote.visibility == "CONTINIOUS") || () )
-        Option(vote.voteResult)
+        Option(vote.result)
     }
     else None
   }
