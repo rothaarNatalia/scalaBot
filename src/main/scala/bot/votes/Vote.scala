@@ -31,7 +31,11 @@ case class Vote( //uuid: String,
          quizList -= id
       }
 
-      def vote(quizId: Int, answer: String) = {}
+      def vote(quizId: Int, answer: String) = {
+
+          if(quizList.contains(quizId))
+                quizList(quizId).vote(answer)
+      }
 }
 
 object Visibility extends Enumeration {
