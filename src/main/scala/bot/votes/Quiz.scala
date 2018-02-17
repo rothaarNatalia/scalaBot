@@ -1,14 +1,16 @@
-package bot.votes
+package bot.pools
 
-import play.api.libs.json.JsResult.Exception
+import bot.{Answer, Result, UserId}
 
 import scala.collection.immutable.HashMap
 
 abstract class Quiz{
 
-  protected var usersAnswers: List[T]
+  protected var usersAnswers: List[(Answer, UserId)] = List[(Answer, UserId)]()
 
-  def createQuiz(quizType: QuizType.Value, question: String, answers: Option[HashMap[Int, String]]): Quiz[T] = {
+  val quiz: String
+
+  def createQuiz(quizType: QuizType.Value, question: String, answers: Option[HashMap[Int, Answer]]): Quiz = {
 
     quizType match {
       case QuizType.CHOICE => if (answers == None) throw IllegalArgumentException
@@ -19,71 +21,91 @@ abstract class Quiz{
     }
   }
 
-  def vote
+  def answer(userAnswer: Answer, userId: UserId)
 
-  def result
+  def result: List[Result]
+
+
 }
 
-case class MultiQuiz[Int](question: String, answers: HashMap[Int, String]) extends Quiz[Int]{
+case class MultiQuiz(question: String, answers: HashMap[Int, Answer]) extends Quiz{
 
-  final private val quiz = question
+  final val quiz = question
 
-  final private val possibleAnswers: HashMap[Int, String] = answers
+  final private val possibleAnswers: HashMap[Int, Answer] = answers
 
-  var usersAnswers = List[Int]()
+  private def answerIsPossible(userAnswer: Answer): Boolean =
+    possibleAnswers.contains(userAnswer.asInstanceOf[Int])
 
-  final override def result: Map[String, Int] = {
+  final override def result: List[Result] = {
 
-    val result = usersAnswers map ((_, 1)) groupBy (_._1) map (v => (v._1, v._2 reduce(_._2 + _._2)))
+    val result = (usersAnswers map (a => (a._1, 1, a._2)) groupBy (_._1)) map
+                                                      (v => (v._1, v._2 map (_._2) reduce(_ + _), v._2 map (_._3)))
 
-    result zip possibleAnswers map (v => (v._2._2, v._1._2))
+    result zip possibleAnswers map (v => (v._2._2, v._1._2, Option(v._1._3))) toList
+
   }
 
-  final override def vote(answer: Seq[Int]): Unit = {
+  final override def answer(userAnswer: Answer, userId: UserId) = {
 
-    answer foreach (a =>
-              if (possibleAnswers.contains(a))
-                usersAnswers += a
+    val answersSeq = userAnswer.asInstanceOf[Seq[Answer]]
+
+    val hasDuplicates = (answersSeq groupBy(_)  exists(_._2.length > 1)).asInstanceOf[Boolean]
+
+    if (hasDuplicates)
+      throw IllegalArgumentException
+
+    answersSeq foreach (a =>
+              if (answerIsPossible(a))
+                usersAnswers = (a, userId) :: usersAnswers
               else throw IllegalArgumentException
       )
   }
 }
 
-case class ChoiceQuiz(question: String, answers: HashMap[Int, String]) extends Quiz[Int]{
+case class ChoiceQuiz(question: String, answers: HashMap[Int, Answer]) extends Quiz{
 
-  final private val quiz = question
+  final val quiz = question
 
-  final private val possibleAnswers: HashMap[Int, String] = answers
+  final private val possibleAnswers: HashMap[Int, Answer] = answers
 
-  var usersAnswers = List()
+  private def answerIsPossible(answer: Answer): Boolean =
+    possibleAnswers.contains(answer.asInstanceOf[Int])
 
-  final override def result: Map[String, Int] = {
+  final override def result: List[Result] = {
 
-    val result = usersAnswers map ((_, 1)) groupBy (_._1) map (v => (v._1, v._2 reduce(_._2 + _._2)))
+    val result = (usersAnswers map (a => (a._1, 1, a._2)) groupBy (_._1)) map
+      (v => (v._1, v._2 map (_._2) reduce(_ + _), v._2 map (_._3)))
 
-    result zip possibleAnswers map (v => (v._2._2, v._1._2))
+    result zip possibleAnswers map (v => (v._2._2, v._1._2, Option(v._1._3))) toList
+
   }
 
-  final override def vote(answer: Int): Unit = {
+  final override def answer(userAnswer: Answer, userId: UserId): Unit = {
 
-      if (possibleAnswers.contains(answer))
-        usersAnswers += answer
+      if (answerIsPossible(userAnswer))
+        usersAnswers = (userAnswer, userId) :: usersAnswers
       else throw IllegalArgumentException
 
   }
 }
 
-case class OpenQuiz[String](question: String) extends Quiz[String]{
+case class OpenQuiz(question: String) extends Quiz {
 
-  final private val quiz = question
+  final val quiz = question
 
-  var usersAnswers: List[String] = List()
+  final override def result: List[Result] = {
 
-  final override def result = usersAnswers
+    (usersAnswers map (a => (a._1, 1, a._2)) groupBy (_._1)) map
+      (v => (v._1, v._2 map (_._2) reduce(_ + _), Option(v._2 map (_._3)))) toList
 
-  final override def vote(answer: Any) = {
-    usersAnswers += answer
   }
+
+  final override def answer(userAnswer: Answer, userId: UserId) = {
+
+    usersAnswers = (userAnswer, userId) :: usersAnswers
+  }
+
 }
 
 object QuizType extends Enumeration {

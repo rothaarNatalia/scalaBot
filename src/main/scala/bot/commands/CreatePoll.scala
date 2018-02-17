@@ -2,18 +2,14 @@ package bot.commands
 
 import java.util.UUID
 
-<<<<<<< HEAD
+import bot.pools.Visibility
 import bot.Response
-=======
-import bot.{Response, Vote}
->>>>>>> b5d785be05fc6c690a71340a44e3cc453106a879
-import bot.commands.CreateVote.Visibility
 
 /**
   * Created by rothaar on 04.02.2018.
   */
 
-case class CreateVote(cmd: String, pars: List[String]) extends Command {
+case class CreatePoll(cmd: String, pars: List[String]) extends Command {
 
   override def command  = cmd
   override def params: List[String] = pars
