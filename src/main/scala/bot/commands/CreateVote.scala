@@ -2,8 +2,10 @@ package bot.commands
 
 import java.util.UUID
 
-import bot.{Response, Vote}
-import bot.commands.CreateVote.Visibility
+import bot.Response
+import bot2.Visibility
+//import bot.commands.CreateVote.Visibility
+
 
 /**
   * Created by rothaar on 04.02.2018.

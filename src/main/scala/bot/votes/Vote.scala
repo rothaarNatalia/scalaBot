@@ -3,9 +3,11 @@ package bot.votes
 import java.util.Calendar
 import java.util.concurrent.atomic.AtomicInteger
 
+import bot2.Visibility
+
 import scala.collection.immutable.HashMap
 
-case class Vote( //uuid: String,
+case class Vote(    uuid: String,
                      owner: String,
                      isAnonymous: Boolean,
                      visibility: Visibility.Value,
@@ -34,7 +36,3 @@ case class Vote( //uuid: String,
       def vote(quizId: Int, answer: String) = {}
 }
 
-object Visibility extends Enumeration {
-
-      val AFTERSTOP, CONTINIOUS = Value
-}

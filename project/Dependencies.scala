@@ -14,7 +14,10 @@ object Dependencies {
       "com.typesafe.akka" %% "akka-http" % "10.0.11",
       "com.typesafe.akka" %% "akka-http-testkit" % "10.0.11" % Test,
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-      "com.typesafe.play" %% "play-json" % "2.6.6"
+      "com.typesafe.play" %% "play-json" % "2.6.6",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
+      "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
+
   )
 
 }

@@ -20,7 +20,7 @@ object Votes {
               dateFrom: Calendar,
               dateTo: Calendar) ={
 
-    votes += (uuid -> Vote(uuid, owner, isAnonymous, visibility, dateFrom, dateTo))
+    //votes += (uuid -> Vote(uuid, owner, isAnonymous, visibility, dateFrom, dateTo))
     votesStatuses += (uuid -> false)
 
   }
@@ -47,7 +47,7 @@ object Votes {
 
     if (votes.contains(uuid)) {
       val vote = votes(uuid)
-      if ((vote.visibility == "CONTINIOUS") || () )
+      //if ((vote.visibility == "CONTINIOUS") || () )
         Option(vote.result)
     }
     else None
