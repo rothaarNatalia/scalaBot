@@ -18,7 +18,7 @@ object Parser extends RegexParsers {
 
   private def stringParam: Parser[String] = "[\\p{Alpha}]+".r ^^ { _.toString }
 
-  private def digitParam: Parser[String] = "[0-9]+".r ^^ { _.toString }
+  private def digitParam: Parser[String] = "[0-9]+".r ^^ { _.toLong }
 
   private def escaping[T](p: Parser[T]): Parser[T] = "(" ~> p <~ ")"
 
@@ -57,9 +57,7 @@ object Parser extends RegexParsers {
 
 
 
-    val p = parse(command, input).getOrElse(unknown)
-
-    p.toString match {
+    parse(command, input).getOrElse(unknown) match {
 
       case x if x == create_poll => parse(createPoll, input).getOrElse(Incorrect)
       case x if x == list => parse(pollsList, input).getOrElse(Incorrect)
@@ -75,7 +73,15 @@ object Parser extends RegexParsers {
 
   def main(args: Array[String]) = {
 
-    val l = parseInput("""/list (johnny)""".stripMargin)
+    val l = parseInput(
+      """
+        |
+        |
+        |           /start_poll
+        |
+        |
+        |(54643513)
+        |(johnny)""".stripMargin)
 
     println(l)
 
