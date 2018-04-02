@@ -18,7 +18,7 @@ object Parser extends RegexParsers {
 
   private def stringParam: Parser[String] = "[\\p{Alpha}]+".r ^^ { _.toString }
 
-  private def digitParam: Parser[String] = "[0-9]+".r ^^ { _.toLong }
+  private def digitParam: Parser[Long] = "[0-9]+".r ^^ { _.toLong }
 
   private def escaping[T](p: Parser[T]): Parser[T] = "(" ~> p <~ ")"
 
@@ -52,22 +52,13 @@ object Parser extends RegexParsers {
 
   private def result = showResult ^^ { case _ => Result }
 
+  private def pollsCommandsParser = (createPoll | pollsList | deletePoll | startPoll | stopPoll | result)
+
 
   def parseInput(input: String): Command = {
 
+    parse(pollsCommandsParser, input).getOrElse(Unknown)
 
-
-    parse(command, input).getOrElse(unknown) match {
-
-      case x if x == create_poll => parse(createPoll, input).getOrElse(Incorrect)
-      case x if x == list => parse(pollsList, input).getOrElse(Incorrect)
-      case x if x == delete_poll => parse(deletePoll, input).getOrElse(Incorrect)
-      case x if x == start_poll => parse(startPoll, input).getOrElse(Incorrect)
-      case x if x == stop_poll => parse(stopPoll, input).getOrElse(Incorrect)
-      case x if x == showResult => parse(result, input).getOrElse(Incorrect)
-      case _ => Unknown
-
-    }
   }
 
 

@@ -13,6 +13,7 @@ sealed trait Command {
 case class CreatePoll(name: String, anonymous: Option[Boolean], visibility: Option[Visibility.Value], dateFrom: Option[DateTime], dateTo: Option[DateTime]) extends Command {
   override val commandName = "/create_poll"
 }
+
 case class DeletePoll(str: Long) extends Command {
   override val commandName = "/delete_poll"
 }

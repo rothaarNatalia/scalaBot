@@ -3,6 +3,7 @@ package bot
 import java.util.Properties
 
 import bot.commands.{Command, UnknownCommand}
+import bot2.Handler
 import com.typesafe.config.ConfigFactory
 
 import scala.io.StdIn

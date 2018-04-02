@@ -1,4 +1,4 @@
-package bot
+package bot2
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -23,15 +23,19 @@ case class Handler() {
   val token = conf.getString("token")
   val url = conf.getString("url")
 
+  private def jsonParser =
+
 
   def requestHandler(rq: HttpRequest): HttpResponse = {
+
+    import Parser._
 
     rq match {
     case HttpRequest(POST, Uri.Path("/rothaar_bot"), _, _, _) =>{
 
-      val body = Json.parse(rq.entity.toString)
+      val body = Json.parse(rq.entity.toString) toString()
 
-      val cmd = Parser.parse(body)
+      val cmd = parseInput(body)
 
       val response = cmd.execute
 

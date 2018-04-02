@@ -1,6 +1,6 @@
 package bot2.polls
 
-case class Poll {
+case class Poll() {
 
 
 
