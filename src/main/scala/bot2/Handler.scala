@@ -23,7 +23,7 @@ case class Handler() {
   val token = conf.getString("token")
   val url = conf.getString("url")
 
-  private def jsonParser =
+  //private def jsonParser =
 
 
   def requestHandler(rq: HttpRequest): HttpResponse = {

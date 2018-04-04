@@ -14,19 +14,19 @@ case class CreatePoll(name: String, anonymous: Option[Boolean], visibility: Opti
   override val commandName = "/create_poll"
 }
 
-case class DeletePoll(str: Long) extends Command {
+case class DeletePoll(id: Long) extends Command {
   override val commandName = "/delete_poll"
 }
-case class StartPoll(str: Long) extends Command {
+case class StartPoll(id: Long) extends Command {
   override val commandName = "/start_poll"
 }
-case class StopPoll(str: Long) extends Command {
+case class StopPoll(id: Long) extends Command {
   override val commandName = "/stop_poll"
 }
 case object PollsList extends Command {
   override val  commandName = "/list"
 }
-case object Result extends Command {
+case class Result(id: Long) extends Command {
   override val commandName = "/result"
 }
 case class Begin(str: Long) extends Command {
