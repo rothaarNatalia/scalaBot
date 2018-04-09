@@ -13,12 +13,17 @@ object Parser extends RegexParsers {
   override val whiteSpace = "[ \t\r\f\n]+".r
 
 
+  private def command: Parser[String] = "/[a-z_]+".r ^^ {
+    _.toString
+  }
 
-  private def command: Parser[String] = "/[a-z_]+".r ^^ { _.toString  }
+  private def stringParam: Parser[String] = "[\\p{Alpha}]+".r ^^ {
+    _.toString
+  }
 
-  private def stringParam: Parser[String] = "[\\p{Alpha}]+".r ^^ { _.toString }
-
-  private def digitParam: Parser[Long] = "[0-9]+".r ^^ { _.toLong }
+  private def digitParam: Parser[Long] = "[0-9]+".r ^^ {
+    _.toLong
+  }
 
   private def escaping[T](p: Parser[T]): Parser[T] = "(" ~> p <~ ")"
 
@@ -32,7 +37,9 @@ object Parser extends RegexParsers {
     case "afterstop" => Visibility.AFTERSTOP
   }
 
-  private def dateTime: Parser[DateTime] = ("hh:mm:ss yy:MM:dd").r ^^ { (DateTime.parse(_)) }
+  private def dateTime: Parser[DateTime] = ("hh:mm:ss yy:MM:dd").r ^^ {
+    (DateTime.parse(_))
+  }
 
   private def createPoll = create_poll ~> escaping(stringParam) ~ opt(escaping(anonymous)) ~
     opt(escaping(visibility)) ~
@@ -42,18 +49,19 @@ object Parser extends RegexParsers {
       CreatePoll(name, anonymous, visibility, fromDate, toDate)
   }
 
-  private def pollsList = list ^^ { case _ => PollsList }
+  private def pollsList = list ^^ { case list => PollsList }
 
-  private def deletePoll = delete_poll ~> escaping(digitParam) ^^ {case id => DeletePoll(id)}
+  private def deletePoll = delete_poll ~> escaping(digitParam) ^^ { case id => DeletePoll(id) }
 
-  private def startPoll = start_poll ~> escaping(digitParam) ^^ {case id => StartPoll(id)}
+  private def startPoll = start_poll ~> escaping(digitParam) ^^ { case id => StartPoll(id) }
 
-  private def stopPoll = stop_poll ~> escaping(digitParam) ^^ {case id => StopPoll(id)}
+  private def stopPoll = stop_poll ~> escaping(digitParam) ^^ { case id => StopPoll(id) }
 
   private def result = showResult ^^ { case _ => Result }
 
-  private def pollsCommandsParser = (createPoll | pollsList | deletePoll | startPoll | stopPoll | result)
-
+  private def pollsCommandsParser = (createPoll | pollsList |
+                                     deletePoll | startPoll |
+                                       stopPoll | result) ^^ { case cmd: Command => cmd }
 
   def parseInput(input: String): Command = {
 
@@ -100,7 +108,6 @@ object Parser extends RegexParsers {
     println(p)
   }
 }
-
 
 sealed trait BotCommands {
 

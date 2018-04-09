@@ -37,7 +37,7 @@ case class Handler() {
 
       val cmd = parseInput(body)
 
-      val response = cmd.execute
+      //val response = cmd.execute
 
       HttpResponse(
         entity = HttpEntity(

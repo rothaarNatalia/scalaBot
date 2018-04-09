@@ -24,13 +24,13 @@ object Bot {
     val route: Route =
       path("hello") {
         post {
-          entity(as[JsValue]) { rq =>
+  /*        entity(as[JsValue]) { rq =>
 
             val command = (rq \ "").asOpt[String].getOrElse("")
             val cmd = parser.parseInput(command)
-
+*/
             complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
-          }
+//          }
         }
       }
 

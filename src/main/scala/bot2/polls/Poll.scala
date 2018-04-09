@@ -9,17 +9,19 @@ case class Poll(userId: String,
                 dateFrom: Option[DateTime],
                 dateTo: Option[DateTime]) {
 
+
   private val questions: List[String] = List()
   private val answers: List[String] = List()
 
   def isCorrect: Boolean = {
 
-    dateTo.fold()
+    Seq(dateTo.isDefined, dateFrom.isDefined, visibility.isDefined, isAnonymous.isDefined).foldLeft(false)(_ && _)
 
+    ???
   }
 
-  def addQuestion
+  def addQuestion = ???
 
-  def deleteQuestion
+  def deleteQuestion = ???
 
 }
