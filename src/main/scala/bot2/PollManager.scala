@@ -1,6 +1,8 @@
 package bot2
 
+
 import bot2.polls.Poll
+import org.joda.time.DateTime
 
 import scala.util.Random
 
@@ -9,26 +11,42 @@ object PollManager {
   private var polls: Map[Long, Poll] = Map()
   val idGenerator = new Random()
 
-  private def addPoll(userId: String, poll: Poll): Long = {
+  private def addPoll(userId: String, poll: Poll): Option[(Long, Poll)] = {
+    if(poll.isCorrect) {
     val id = idGenerator.nextLong()
-    polls += (id -> poll)
-    id
+        Option((id, poll))
+    }
+    else None
   }
 
-  private def deletePoll(userId: String, id: Long): Unit = {
-    polls -= id
+  private def deletePoll(userId: String, id: Long): Option[Long] = {
+    if ((polls.contains(id)) && (polls(id).userId == userId))
+      Some(id)
+    else None
   }
 
-  private def startPoll(userId: String, id: Long): Unit = {
-    polls -= id
+  private def startPoll(userId: String, id: Long): Option[Long] = {
+
+    if (!polls.contains(id))
+      None
+
+    val poll = polls(id)
+
+    if ((poll.dateFrom.isEmpty) && (poll.userId == userId))
+        Some(id)
+    else None
+
+
   }
 
-  private def stopPoll(userId: String, id: Long): Unit = {
+  private def stopPoll(userId: String, id: Long): Option[Long] = {
     polls -= id
+    true
   }
 
   private def result(userId: String, id: Long): Unit = {
     polls -= id
+
   }
 
   private def list(userId: String): Unit = {
@@ -38,12 +56,23 @@ object PollManager {
   def execute(user: String, cmd: Command): String = {
 
     cmd match {
-      case a: CreatePoll => addPoll(userId = user, Poll(userId = user,
-                                                         visibility = a.visibility,
-                                                         isAnonymous = a.anonymous,
-                                                         dateFrom = a.dateFrom,
-                                                         dateTo = a.dateTo))
-      case d: DeletePoll => deletePoll(userId = user, id = d.id)
+      case a: CreatePoll => {val p = Poll(userId = user,
+                                  name = a.name,
+                                  visibility = a.visibility,
+                                  isAnonymous = a.anonymous,
+                                  dateFrom = a.dateFrom,
+                                  dateTo = a.dateTo)
+
+        val elem = addPoll(userId = user, poll = p)
+        if (elem.isDefined)
+            polls = polls + elem.get
+
+      }
+
+      case d: DeletePoll => {
+        val id = deletePoll(userId = user, id = d.id)
+        polls = polls - id.getOrElse(Long.MinValue)
+      }
       case srt: StartPoll => startPoll(userId = user, id = srt.id)
       case stp: StopPoll => stopPoll(userId = user, id = stp.id)
       case rsl: Result => result(userId = user, id = rsl.id)
