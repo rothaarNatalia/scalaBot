@@ -15,6 +15,17 @@ case class Poll(userId: String,
   private val questions: List[String] = List()
   private val answers: List[String] = List()
 
+  def result: Option[List[String]] = {
+
+    val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
+
+    if ((vsb == Visibility.CONTINIOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
+      Some(answers)
+    else
+      None
+
+  }
+
   def isCorrect: Boolean = {
 
     val s = Seq(isAnonymous.isDefined, visibility.isDefined, dateFrom.isDefined, dateTo.isDefined)

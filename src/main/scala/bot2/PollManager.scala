@@ -1,6 +1,7 @@
 package bot2
 
 
+import bot2.PollManager.polls
 import bot2.polls.Poll
 import org.joda.time.DateTime
 
@@ -20,9 +21,14 @@ object PollManager {
   }
 
   private def deletePoll(userId: String, id: Long): Option[Long] = {
-    if ((polls.contains(id)) && (polls(id).userId == userId))
+
+    if (!polls.contains(id))
+      None
+
+    if ((polls(id).userId == userId))
       Some(id)
     else None
+
   }
 
   private def startPoll(userId: String, id: Long): Option[Long] = {
@@ -32,20 +38,30 @@ object PollManager {
 
     val poll = polls(id)
 
-    if ((poll.dateFrom.isEmpty) && (poll.userId == userId))
+    if ((poll.dateFrom.isEmpty) && (poll.userId == userId) && (!poll.isActive))
         Some(id)
     else None
-
 
   }
 
   private def stopPoll(userId: String, id: Long): Option[Long] = {
-    polls -= id
-    true
+
+    if (!polls.contains(id))
+      None
+
+    val poll = polls(id)
+
+    if ((poll.dateTo.isEmpty) && (poll.userId == userId) && (poll.isActive))
+      Some(id)
+    else None
+
   }
 
-  private def result(userId: String, id: Long): Unit = {
-    polls -= id
+  private def result(id: Long): Option[List[String]] = {
+
+    if (!polls.contains(id))
+      None
+    else polls(id).result
 
   }
 
