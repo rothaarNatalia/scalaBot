@@ -21,8 +21,6 @@ case class Poll(userId: String,
 
     val seqCheck = !(s zip s.tail).contains((false, true))
 
-
-    if(seqCheck) {
     val dFCheck = if (dateFrom.isDefined)
                         dateFrom.exists(_.isAfterNow)
                   else true
@@ -31,10 +29,8 @@ case class Poll(userId: String,
                         dateTo.exists(_.isAfter(dateFrom.get))
                    else true
 
-      dFCheck && dTCheck
-    }
-    else
-      false
+
+    seqCheck && dFCheck && dTCheck
 
   }
 
