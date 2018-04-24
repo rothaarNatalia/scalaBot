@@ -19,7 +19,7 @@ case class Poll(userId: String,
 
     val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
 
-    if ((vsb == Visibility.CONTINIOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
+    if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
       Some(answers)
     else
       None

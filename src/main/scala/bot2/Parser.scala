@@ -1,6 +1,7 @@
 package bot2
 
 import org.joda.time.DateTime
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -33,13 +34,13 @@ object Parser extends RegexParsers {
   }
 
   private def visibility: Parser[Visibility.Value] = ("afterstop" | "continuous") ^^ {
-    case "continuous" => Visibility.CONTINIOUS
+    case "continuous" => Visibility.CONTINUOUS
     case "afterstop" => Visibility.AFTERSTOP
   }
 
-  private def dateTime: Parser[DateTime] = ("hh:mm:ss yy:MM:dd").r ^^ {
-    (DateTime.parse(_))
-  }
+  val dtFormat: String = "HH:mm:ss yy:MM:dd"
+  val frm = DateTimeFormat.forPattern(dtFormat)
+  private def dateTime: Parser[DateTime] = "[0-2][0-9]:[0-5][0-9]:[0-5][0-9] [0-9][0-9]:[0-1][0-9]:[0-3][0-9]".r ^^ { case dt => (DateTime.parse(dt, frm))}
 
   private def createPoll = create_poll ~> escaping(stringParam) ~ opt(escaping(anonymous)) ~
     opt(escaping(visibility)) ~
@@ -65,12 +66,12 @@ object Parser extends RegexParsers {
 
   def parseInput(input: String): Command = {
 
-    parse(pollsCommandsParser, input).getOrElse(Unknown)
+    parse(pollsCommandsParser, input.toLowerCase).getOrElse(Unknown)
 
   }
 
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
 
 
 
@@ -78,19 +79,21 @@ object Parser extends RegexParsers {
       """
         |
         |
-        |           /start_poll
+        |           /create_poll
         |
         |
-        |(54643513)
-        |(johnny)""".stripMargin)
+        |(johnny)
+        |(yes)(continuous)
+        |(00:00:00 18:04:26)
+        |(00:00:00 18:05:05)""".stripMargin)
 
     println(l)
 
 
-    val p =
+    /*val p =
       parse(createPoll,
         """/create_poll (johnny)""".stripMargin)
-    /*match {
+    match {
         case Success(matched,_) => matched
         case Failure(msg,_) => println("FAILURE: " + msg)
         case Error(msg,_) => println("ERROR: " + msg)
@@ -107,7 +110,9 @@ object Parser extends RegexParsers {
       case Error(msg,_) => println("ERROR: " + msg)
     }*/
 
-    println(p)
+    println(l)
+
+    PollManager.execute("rothaar", l)
   }
 }
 

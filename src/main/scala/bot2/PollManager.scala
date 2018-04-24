@@ -65,8 +65,8 @@ object PollManager {
 
   }
 
-  private def list(userId: String): Unit = {
-    //polls -= id
+  private def list(userId: String): List[String] = {
+    polls map (p => s"#${p._1} ${p._2.name}") toList
   }
 
   def execute(user: String, cmd: Command): String = {
@@ -91,7 +91,7 @@ object PollManager {
       }
       case srt: StartPoll => startPoll(userId = user, id = srt.id)
       case stp: StopPoll => stopPoll(userId = user, id = stp.id)
-      case rsl: Result => result(userId = user, id = rsl.id)
+      case rsl: Result => result(id = rsl.id)
       case _: PollsList.type => list(userId = user)
     }
 
