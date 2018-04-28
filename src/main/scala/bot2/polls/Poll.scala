@@ -3,7 +3,7 @@ package bot2.polls
 import bot2.Visibility
 import org.joda.time.DateTime
 
-case class Poll(userId: String,
+case class Poll(userId: UserId,
                 name: String,
                 isAnonymous: Option[Boolean],
                 visibility: Option[Visibility.Value],
@@ -12,15 +12,14 @@ case class Poll(userId: String,
                 isActive: Boolean = false) {
 
 
-  private val questions: List[String] = List()
-  private val answers: List[String] = List()
+  private var questions: Map[Long, Quiz] = Map.empty
 
   def result: Option[List[String]] = {
 
     val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
 
     if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
-      Some(answers)
+      None//Some(questions)
     else
       None
 
@@ -45,8 +44,25 @@ case class Poll(userId: String,
 
   }
 
-  def addQuestion = ???
+  def addQuestion(q: Quiz) = {
+
+    ???
+  }
 
   def deleteQuestion = ???
+
+  def answer(id: Long) = {
+
+    }
+
+  def view = {
+
+  }
+
+  def begin(userId: UserId, id: Long) = ???
+
+  def end(userId: UserId) = ???
+
+
 
 }

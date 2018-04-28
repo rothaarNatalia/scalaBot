@@ -2,56 +2,56 @@ package bot2
 
 
 import bot2.PollManager.polls
-import bot2.polls.Poll
+import bot2.polls.{Poll, Quiz, UserId}
 import org.joda.time.DateTime
 
 import scala.util.Random
 
 object PollManager {
 
-  private var polls: Map[Long, Poll] = Map()
+  private var polls: Map[Long, (Poll, List[UserId])] = Map()
   val idGenerator = new Random()
 
-  private def addPoll(userId: String, poll: Poll): Option[(Long, Poll)] = {
+  private def addPoll(userId: UserId, poll: Poll): Option[(Long, (Poll, List[UserId]))] = {
     if(poll.isCorrect) {
     val id = idGenerator.nextLong()
-        Option((id, poll))
+        Option((id, (poll, Nil)))
     }
     else None
   }
 
-  private def deletePoll(userId: String, id: Long): Option[Long] = {
+  private def deletePoll(userId: UserId, id: Long): Option[Long] = {
 
     if (!polls.contains(id))
       None
 
-    if ((polls(id).userId == userId))
+    if ((polls(id)._1.userId == userId))
       Some(id)
     else None
 
   }
 
-  private def startPoll(userId: String, id: Long): Option[Long] = {
+  private def startPoll(userId: UserId, id: Long): Option[Long] = {
 
     if (!polls.contains(id))
       None
 
     val poll = polls(id)
 
-    if ((poll.dateFrom.isEmpty) && (poll.userId == userId) && (!poll.isActive))
+    if ((poll._1.dateFrom.isEmpty) && (poll._1.userId == userId) && (!poll._1.isActive))
         Some(id)
     else None
 
   }
 
-  private def stopPoll(userId: String, id: Long): Option[Long] = {
+  private def stopPoll(userId: UserId, id: Long): Option[Long] = {
 
     if (!polls.contains(id))
       None
 
     val poll = polls(id)
 
-    if ((poll.dateTo.isEmpty) && (poll.userId == userId) && (poll.isActive))
+    if ((poll._1.dateTo.isEmpty) && (poll._1.userId == userId) && (poll._1.isActive))
       Some(id)
     else None
 
@@ -61,15 +61,25 @@ object PollManager {
 
     if (!polls.contains(id))
       None
-    else polls(id).result
+    else polls(id)._1.result
 
   }
 
-  private def list(userId: String): List[String] = {
-    polls map (p => s"#${p._1} ${p._2.name}") toList
+  private def list(userId: UserId): List[String] = {
+    polls map (p => s"#${p._1} ${p._2._1.name}") toList
   }
 
-  def execute(user: String, cmd: Command): String = {
+  private def begin(userId: UserId, pId: Long) = {
+
+    polls(pId).copy(_, List(userId))
+    ???
+  }
+
+  private def addQuestion(userId: UserId, q: Quiz): Option[Long] = {
+    ???
+  }
+
+  def execute(user: UserId, cmd: Command): String = {
 
     cmd match {
       case a: CreatePoll => {val p = Poll(userId = user,

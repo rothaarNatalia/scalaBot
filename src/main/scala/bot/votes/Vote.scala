@@ -14,13 +14,13 @@ case class Vote(    uuid: String,
                      dateFrom: Calendar,
                      dateTo: Calendar ){
 
-      private var quizList: HashMap[Int, Quiz] = HashMap()
+      private var quizList: HashMap[Int, Quizzz] = HashMap()
 
       private var quizIdCounter: AtomicInteger = new AtomicInteger(1)
 
       def result: Int = 0
 
-      def addQuiz(q: Quiz): Int = {
+      def addQuiz(q: Quizzz): Int = {
 
             val id = quizIdCounter.getAndAdd(1)
             quizList += ( id -> q)

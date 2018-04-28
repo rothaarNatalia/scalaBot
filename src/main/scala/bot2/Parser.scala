@@ -1,5 +1,6 @@
 package bot2
 
+import bot2.polls.{Quiz, QuizType}
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
@@ -60,6 +61,8 @@ object Parser extends RegexParsers {
 
   private def result = showResult ^^ { case _ => Result }
 
+  private def addQuestion = ???
+
   private def pollsCommandsParser = (createPoll | pollsList |
                                      deletePoll | startPoll |
                                        stopPoll | result) ^^ { case cmd: Command => cmd }
@@ -72,7 +75,6 @@ object Parser extends RegexParsers {
 
 
   def main(args: Array[String]): Unit = {
-
 
 
     val l = parseInput(

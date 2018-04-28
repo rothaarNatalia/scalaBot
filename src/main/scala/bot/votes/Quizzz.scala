@@ -2,7 +2,7 @@ package bot.votes
 
 import scala.collection.immutable.HashMap
 
-case class Quiz(`type`: QuizType.Value, question: String){
+case class Quizzz(`type`: QuizType.Value, question: String){
 
   private val quizType = `type`
 
