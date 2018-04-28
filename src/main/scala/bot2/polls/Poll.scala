@@ -9,10 +9,8 @@ case class Poll(userId: UserId,
                 visibility: Option[Visibility.Value],
                 dateFrom: Option[DateTime],
                 dateTo: Option[DateTime],
+                questions: Map[Long, Quiz],
                 isActive: Boolean = false) {
-
-
-  private var questions: Map[Long, Quiz] = Map.empty
 
   def result: Option[List[String]] = {
 
@@ -58,11 +56,6 @@ case class Poll(userId: UserId,
   def view = {
 
   }
-
-  def begin(userId: UserId, id: Long) = ???
-
-  def end(userId: UserId) = ???
-
 
 
 }

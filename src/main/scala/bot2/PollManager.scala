@@ -9,7 +9,9 @@ import scala.util.Random
 
 object PollManager {
 
-  private var polls: Map[Long, (Poll, List[UserId])] = Map()
+  private var polls: Map[Long, Poll] = Map()
+  private var sessions: Map[UserId, Long] = Map()
+
   val idGenerator = new Random()
 
   private def addPoll(userId: UserId, poll: Poll): Option[(Long, (Poll, List[UserId]))] = {
@@ -25,7 +27,7 @@ object PollManager {
     if (!polls.contains(id))
       None
 
-    if ((polls(id)._1.userId == userId))
+    if ((polls(id).userId == userId))
       Some(id)
     else None
 
@@ -38,7 +40,7 @@ object PollManager {
 
     val poll = polls(id)
 
-    if ((poll._1.dateFrom.isEmpty) && (poll._1.userId == userId) && (!poll._1.isActive))
+    if ((poll.dateFrom.isEmpty) && (poll.userId == userId) && (!poll.isActive))
         Some(id)
     else None
 
@@ -51,7 +53,7 @@ object PollManager {
 
     val poll = polls(id)
 
-    if ((poll._1.dateTo.isEmpty) && (poll._1.userId == userId) && (poll._1.isActive))
+    if ((poll.dateTo.isEmpty) && (poll.userId == userId) && (poll.isActive))
       Some(id)
     else None
 
@@ -61,17 +63,17 @@ object PollManager {
 
     if (!polls.contains(id))
       None
-    else polls(id)._1.result
+    else polls(id).result
 
   }
 
   private def list(userId: UserId): List[String] = {
-    polls map (p => s"#${p._1} ${p._2._1.name}") toList
+    polls map (p => s"#${p._1} ${p._2.name}") toList
   }
 
   private def begin(userId: UserId, pId: Long) = {
 
-    polls(pId).copy(_, List(userId))
+    polls(pId).copy()
     ???
   }
 
