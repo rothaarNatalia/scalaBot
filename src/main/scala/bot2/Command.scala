@@ -1,5 +1,6 @@
 package bot2
 
+import bot2.polls.{Quiz, UserId}
 import org.joda.time.DateTime
 
 sealed trait Command {
@@ -32,7 +33,7 @@ case class Result(id: Long) extends Command {
 case class Begin(str: Long) extends Command {
   override val commandName = "/begin"
 }
-case class AddQuestion(str: Long) extends Command {
+case class AddQuestion(q: Quiz) extends Command {
   override val commandName = "/add_question"
 }
 case class DeleteQuestion(str: Long) extends Command {

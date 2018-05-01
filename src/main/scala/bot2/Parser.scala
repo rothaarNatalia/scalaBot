@@ -19,9 +19,7 @@ object Parser extends RegexParsers {
     _.toString
   }
 
-  private def stringParam: Parser[String] = "[\\p{Alpha}]+".r ^^ {
-    _.toString
-  }
+  private def stringParam: Parser[String] = "[\\p{L}\\d!\\?-]+".r ^^ { _.toString }
 
   private def digitParam: Parser[Long] = "[0-9]+".r ^^ {
     _.toLong
@@ -37,6 +35,12 @@ object Parser extends RegexParsers {
   private def visibility: Parser[Visibility.Value] = ("afterstop" | "continuous") ^^ {
     case "continuous" => Visibility.CONTINUOUS
     case "afterstop" => Visibility.AFTERSTOP
+  }
+
+  private def questionType: Parser[QuizType.Value] = ("open" | "choice" | "multi") ^^ {
+    case "open" => QuizType.OPEN
+    case "choice" => QuizType.CHOICE
+    case "multi" => QuizType.MULTI
   }
 
   val dtFormat: String = "HH:mm:ss yy:MM:dd"
@@ -61,11 +65,16 @@ object Parser extends RegexParsers {
 
   private def result = showResult ^^ { case _ => Result }
 
-  private def addQuestion = ???
+  private def addQuestion = add_question ~> escaping(stringParam) ~
+                                            opt(escaping(questionType)) ~
+                                            rep(stringParam) ^^ {
+                            case quiz ~ qTypq ~ answers =>
+                              AddQuestion(Quiz(quizType = qTypq, quiz = quiz, pAnswers = answers: _*))}
 
   private def pollsCommandsParser = (createPoll | pollsList |
                                      deletePoll | startPoll |
-                                       stopPoll | result) ^^ { case cmd: Command => cmd }
+                                       stopPoll | result |
+                                    addQuestion) ^^ { case cmd: Command => cmd }
 
   def parseInput(input: String): Command = {
 
@@ -81,13 +90,15 @@ object Parser extends RegexParsers {
       """
         |
         |
-        |           /create_poll
+        |           /add_question
         |
         |
-        |(johnny)
-        |(yes)(continuous)
-        |(00:00:00 18:04:26)
-        |(00:00:00 18:05:05)""".stripMargin)
+        |(johnny?)
+        |(choice)
+        |dfgjfgjfgjfjfj
+        | fghfgh 880
+        |gsdkjfhslkdjf
+        |jsdlgsdkmgsd!!!""".stripMargin)
 
     println(l)
 
@@ -126,6 +137,12 @@ sealed trait BotCommands {
   val start_poll = "/start_poll"
   val stop_poll = "/stop_poll"
   val showResult = "/result"
+  val begin = "/begin"
+  val end = "/end"
+  val add_question = "/add_question"
+  val delete_question = "/delete_question"
+  val view = "/view"
+  val answer = "/answer"
   val unknown = "unknown"
 
 }

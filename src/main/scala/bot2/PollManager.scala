@@ -1,9 +1,7 @@
 package bot2
 
 
-import bot2.PollManager.polls
 import bot2.polls.{Poll, Quiz, UserId}
-import org.joda.time.DateTime
 
 import scala.util.Random
 
@@ -71,18 +69,63 @@ object PollManager {
     polls map (p => s"#${p._1} ${p._2.name}") toList
   }
 
-  private def begin(userId: UserId, pId: Long) = {
+  private def begin(userId: UserId, pId: Long): Option[(UserId, Long)] = {
 
-    polls(pId).copy()
-    ???
+    if (sessions.contains(userId))
+      None
+    else
+      Some((userId, pId))
   }
 
-  private def addQuestion(userId: UserId, q: Quiz): Option[Long] = {
-    ???
+  private def end(userId: UserId): Option[(UserId, Long)] = {
+
+    if (sessions.contains(userId))
+      None
+    else
+      Some((userId, sessions(userId)))
+  }
+
+  private def addQuestion(userId: UserId, q: Quiz): Option[(Long, Quiz)] = {
+
+    if (!sessions.contains(userId))
+      None
+
+    val p = polls(sessions(userId))
+
+    if (p.userId != userId)
+        None
+      else{
+        Some(p.addQuestion(q))
+    }
+
+  }
+
+  private def deleteQuestion(userId: UserId, qId: Long): Option[Poll] = {
+
+    if (!sessions.contains(userId))
+      None
+
+    val p = polls(sessions(userId))
+
+    if (p.userId != userId)
+      None
+    else{
+        p.deleteQuestion(qId) flatMap (v => Some(p.copy(questions = (p.questions - v._1))))
+    }
+
+  }
+
+  private def answer(userId: UserId, qId: Long, a: Answer*) = {
+
+    if (!sessions.contains(userId))
+      None
+
+    val p = polls(sessions(userId))
+
   }
 
   def execute(user: UserId, cmd: Command): String = {
-
+/*
     cmd match {
       case a: CreatePoll => {val p = Poll(userId = user,
                                   name = a.name,
@@ -94,8 +137,8 @@ object PollManager {
         val elem = addPoll(userId = user, poll = p)
         if (elem.isDefined)
             polls = polls + elem.get
+ ???
 
-      }
 
       case d: DeletePoll => {
         val id = deletePoll(userId = user, id = d.id)
@@ -105,7 +148,7 @@ object PollManager {
       case stp: StopPoll => stopPoll(userId = user, id = stp.id)
       case rsl: Result => result(id = rsl.id)
       case _: PollsList.type => list(userId = user)
-    }
+    }*/
 
     ???
   }

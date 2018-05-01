@@ -2,7 +2,9 @@ package bot2.polls
 
 import bot2.Answer
 
-case class Quiz(quizType: QuizType.Value, quiz: String, pAnswers: String*) {
+case class Quiz(quizType: Option[QuizType.Value],
+                quiz: String,
+                pAnswers: String*) {
 
   private var answers: Map[UserId, Seq[Answer[_]]] = Map.empty
   private val possibleAnswers = (0 to pAnswers.length - 1) zip (pAnswers) toMap
@@ -22,9 +24,10 @@ case class Quiz(quizType: QuizType.Value, quiz: String, pAnswers: String*) {
 
   def answer(u: UserId, a: Answer[_]*): Option[(UserId, Seq[Answer[_]])] = {
 
-    if (isCorrect(a: _*))
-      Option((u, a))
-    else None
+    if ((!isCorrect(a: _*)) || (answers.contains(u)))
+      None
+
+    Option((u, a))
 
   }
 

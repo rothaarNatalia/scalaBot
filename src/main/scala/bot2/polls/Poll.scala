@@ -1,7 +1,9 @@
 package bot2.polls
 
-import bot2.Visibility
+import bot2.{Answer, Visibility}
 import org.joda.time.DateTime
+
+import scala.util.Random
 
 case class Poll(userId: UserId,
                 name: String,
@@ -42,20 +44,27 @@ case class Poll(userId: UserId,
 
   }
 
-  def addQuestion(q: Quiz) = {
+  def answer(userId: UserId, qId: Long, a: Answer[_]*) = {
+
+    if (!questions.contains(qId))
+      None
+    else
+      questions(qId).answer(userId, a: _ *)
+
+  }
+
+  def view = {
 
     ???
   }
 
-  def deleteQuestion = ???
+  def addQuestion(q: Quiz): (Long, Quiz) = (Random.nextLong(), q)
 
-  def answer(id: Long) = {
-
-    }
-
-  def view = {
-
+  def deleteQuestion(qId: Long): Option[(Long, Quiz)] = {
+    if (questions.contains(qId))
+        Some(qId, questions(qId))
+    else
+        None
   }
-
 
 }
