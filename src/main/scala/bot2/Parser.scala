@@ -14,7 +14,6 @@ object Parser extends RegexParsers {
 
   override val whiteSpace = "[ \t\r\f\n]+".r
 
-
   private def command: Parser[String] = "/[a-z_]+".r ^^ {
     _.toString
   }
@@ -65,16 +64,68 @@ object Parser extends RegexParsers {
 
   private def result = showResult ^^ { case _ => Result }
 
+  private def begin = BotCommands.begin ~> escaping(digitParam) ^^ {case id => Begin(id)}
+
+  private def end = BotCommands.end ^^ {case _ => End}
+
+  private def view = BotCommands.view ^^ {case _ => View}
+
   private def addQuestion = add_question ~> escaping(stringParam) ~
                                             opt(escaping(questionType)) ~
                                             rep(stringParam) ^^ {
                             case quiz ~ qTypq ~ answers =>
                               AddQuestion(Quiz(quizType = qTypq, quiz = quiz, pAnswers = answers: _*))}
 
+  private def deleteQuestion = delete_question ~> escaping(digitParam) ^^ {case id => DeleteQuestion(id)}
+
+  import bot2.polls.Answer
+/*  private def userAnswerInt = escaping((stringParam | digitParam)) ^^ {
+                            case id: Int =>  id
+                            case str: String => str
+                            }
+
+  private def userAnswerString = escaping(stringParam) ^^ {
+    case id: Int =>  id
+    case str: String => str
+  }  */
+
+
+  private def fake = escaping((digitParam).+) ^^ {
+    case p => {
+      val o = p
+      println(o)
+      Unknown
+    }
+
+  }
+
+  private def answer = BotCommands.answer ~> escaping(digitParam) ~ escaping( digitParam.+ |
+                                                                              digitParam |
+                                                                              stringParam
+
+                                                                            ) ^^ {
+
+                                          case id ~ uAnswers => {
+
+                                              uAnswers match {
+                                                case aswIdSeq: Seq[Long] => UserAnswer(id, aswIdSeq)
+                                                case aswId: Long => UserAnswer(id, aswId)
+                                                case string: String => UserAnswer(id, string)
+                                              }
+                                          }
+                                          case p => {
+                                            val o = p
+                                            println(o)
+                                            Unknown
+                                          }
+                                       }
+
   private def pollsCommandsParser = (createPoll | pollsList |
                                      deletePoll | startPoll |
                                        stopPoll | result |
-                                    addQuestion) ^^ { case cmd: Command => cmd }
+                                          begin | end |
+                                           view | answer |
+                                    addQuestion | deleteQuestion) ^^ { case cmd: Command => cmd }
 
   def parseInput(input: String): Command = {
 
@@ -88,17 +139,12 @@ object Parser extends RegexParsers {
 
     val l = parseInput(
       """
+        |/answer
+        |(0)
         |
+        |(1 4 5 5 12)
         |
-        |           /add_question
-        |
-        |
-        |(johnny?)
-        |(choice)
-        |dfgjfgjfgjfjfj
-        | fghfgh 880
-        |gsdkjfhslkdjf
-        |jsdlgsdkmgsd!!!""".stripMargin)
+        |""".stripMargin)
 
     println(l)
 
@@ -121,8 +167,8 @@ object Parser extends RegexParsers {
       case Success(matched,_) => println(matched)
       case Failure(msg,_) => println("FAILURE: " + msg)
       case Error(msg,_) => println("ERROR: " + msg)
-    }*/
-
+    }
+*/
     println(l)
 
     PollManager.execute("rothaar", l)

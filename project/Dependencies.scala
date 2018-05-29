@@ -16,6 +16,7 @@ object Dependencies {
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "com.typesafe.play" %% "play-json" % "2.6.6",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
+      "com.github.nscala-time" %% "nscala-time" % "2.18.0",
       "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
 
   )

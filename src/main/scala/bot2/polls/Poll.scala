@@ -1,7 +1,8 @@
 package bot2.polls
 
-import bot2.{Answer, Visibility}
-import org.joda.time.DateTime
+import bot2.{Visibility}
+import com.github.nscala_time.time.Imports._
+
 
 import scala.util.Random
 
@@ -13,6 +14,8 @@ case class Poll(userId: UserId,
                 dateTo: Option[DateTime],
                 questions: Map[Long, Quiz],
                 isActive: Boolean = false) {
+
+  var answered: Map[Long, Vector[UserId]] = questions map (_._1 -> Vector.empty)
 
   def result: Option[List[String]] = {
 
@@ -44,12 +47,31 @@ case class Poll(userId: UserId,
 
   }
 
+
   def answer(userId: UserId, qId: Long, a: Answer[_]*) = {
 
-    if (!questions.contains(qId))
+    val currentDate = DateTime.now()
+
+    if ((!questions.contains(qId)) ||
+        (currentDate < dateFrom.getOrElse(currentDate)) ||
+        (currentDate > dateTo.getOrElse(currentDate)))
       None
+
+    if (answered(qId).contains(userId))
+      None
+
+    val result =
+
+    if(isAnonymous.getOrElse(true))
+      questions(qId).answer(None, a: _ *)
     else
-      questions(qId).answer(userId, a: _ *)
+      questions(qId).answer(Some(userId), a: _ *)
+
+    if (result.nonEmpty) {
+      val usrs = answered(qId)
+      answered.updated(qId, usrs ++ userId)
+
+    }
 
   }
 

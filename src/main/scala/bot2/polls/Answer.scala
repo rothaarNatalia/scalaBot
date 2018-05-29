@@ -14,9 +14,16 @@ object Answer {
 
   }
 
-  implicit class IntAnswer(val a: Int) extends Answer[Int] {
+  implicit class IntAnswer(val a: Long) extends Answer[Long] {
 
-    override def answer: Int = a
+    override def answer: Long = a
+
+    override def toString = a.toString
+  }
+
+  implicit class SeqLongAnswer(val a: Seq[Long]) extends Answer[Seq[Long]] {
+
+    override def answer: Seq[Long] = a
 
     override def toString = a.toString
   }

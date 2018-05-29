@@ -1,12 +1,12 @@
 package bot2.polls
 
-import bot2.Answer
+import bot2.UserAnswer
 
 case class Quiz(quizType: Option[QuizType.Value],
                 quiz: String,
                 pAnswers: String*) {
 
-  private var answers: Map[UserId, Seq[Answer[_]]] = Map.empty
+  private val answers: Vector[(Option[UserId], Seq[Answer[_]])] = Vector.empty
   private val possibleAnswers = (0 to pAnswers.length - 1) zip (pAnswers) toMap
 
 
@@ -22,15 +22,17 @@ case class Quiz(quizType: Option[QuizType.Value],
 
   }
 
-  def answer(u: UserId, a: Answer[_]*): Option[(UserId, Seq[Answer[_]])] = {
+  def answer(u: Option[UserId], a: Answer[_]*): Option[(Option[UserId], Seq[Answer[_]])] = {
 
-    if ((!isCorrect(a: _*)) || (answers.contains(u)))
+    if ((!isCorrect(a: _*)) )//|| (answered.contains(u)))
       None
-
-    Option((u, a))
+    else
+      Some(u, a)
 
   }
 
-  def view = ???
+  def view = {
+    ""
+  }
 
 }

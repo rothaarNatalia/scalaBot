@@ -1,7 +1,7 @@
 package bot2
 
 
-import bot2.polls.{Poll, Quiz, UserId}
+import bot2.polls.{Answer, Poll, Quiz, UserId}
 
 import scala.util.Random
 
@@ -115,7 +115,7 @@ object PollManager {
 
   }
 
-  private def answer(userId: UserId, qId: Long, a: Answer*) = {
+  private def answer(userId: UserId, qId: Long, a: Answer[_]*) = {
 
     if (!sessions.contains(userId))
       None
