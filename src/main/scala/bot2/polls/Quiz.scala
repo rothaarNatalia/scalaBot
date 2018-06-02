@@ -4,11 +4,11 @@ import bot2.UserAnswer
 
 case class Quiz(quizType: Option[QuizType.Value],
                 quiz: String,
-                pAnswers: String*) {
+                answers: Vector[(Option[UserId], Seq[Answer[_]])],
+                pAnswers: List[String]) {
 
-  private val answers: Vector[(Option[UserId], Seq[Answer[_]])] = Vector.empty
+  //private val answers: Vector[(Option[UserId], Seq[Answer[_]])] = Vector.empty
   private val possibleAnswers = (0 to pAnswers.length - 1) zip (pAnswers) toMap
-
 
   import QuizType._
 
@@ -35,4 +35,9 @@ case class Quiz(quizType: Option[QuizType.Value],
     ""
   }
 
+}
+
+object QuizType extends Enumeration {
+
+  val MULTI, CHOICE, OPEN = Value
 }

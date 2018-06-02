@@ -1,6 +1,6 @@
 package bot2
 
-import bot2.polls.{Quiz, QuizType}
+import bot2.polls.{Quiz, QuizType, Visibility}
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
@@ -74,7 +74,7 @@ object Parser extends RegexParsers {
                                             opt(escaping(questionType)) ~
                                             rep(stringParam) ^^ {
                             case quiz ~ qTypq ~ answers =>
-                              AddQuestion(Quiz(quizType = qTypq, quiz = quiz, pAnswers = answers: _*))}
+                              AddQuestion(Quiz(qTypq, quiz, Vector.empty, answers))}
 
   private def deleteQuestion = delete_question ~> escaping(digitParam) ^^ {case id => DeleteQuestion(id)}
 

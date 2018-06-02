@@ -2,6 +2,7 @@ package bot2
 
 
 import bot2.polls.{Answer, Poll, Quiz, UserId}
+import org.joda.time.DateTime
 
 import scala.util.Random
 
@@ -12,10 +13,10 @@ object PollManager {
 
   val idGenerator = new Random()
 
-  private def addPoll(userId: UserId, poll: Poll): Option[(Long, (Poll, List[UserId]))] = {
+  private def addPoll(userId: UserId, poll: Poll): Option[(Long, Poll)] = {
     if(poll.isCorrect) {
     val id = idGenerator.nextLong()
-        Option((id, (poll, Nil)))
+        Option((id, poll))
     }
     else None
   }
@@ -31,7 +32,7 @@ object PollManager {
 
   }
 
-  private def startPoll(userId: UserId, id: Long): Option[Long] = {
+  private def startPoll(userId: UserId, id: Long): Option[Poll] = {
 
     if (!polls.contains(id))
       None
@@ -39,12 +40,12 @@ object PollManager {
     val poll = polls(id)
 
     if ((poll.dateFrom.isEmpty) && (poll.userId == userId) && (!poll.isActive))
-        Some(id)
+        Some(poll.copy(dateFrom = Some(DateTime.now()),  isActive = true))
     else None
 
   }
 
-  private def stopPoll(userId: UserId, id: Long): Option[Long] = {
+  private def stopPoll(userId: UserId, id: Long): Option[Poll] = {
 
     if (!polls.contains(id))
       None
@@ -52,7 +53,7 @@ object PollManager {
     val poll = polls(id)
 
     if ((poll.dateTo.isEmpty) && (poll.userId == userId) && (poll.isActive))
-      Some(id)
+      Some(poll.copy(isActive = false, dateTo = Option(DateTime.now())))
     else None
 
   }
@@ -115,42 +116,83 @@ object PollManager {
 
   }
 
-  private def answer(userId: UserId, qId: Long, a: Answer[_]*) = {
+  private def answer(userId: UserId, qId: Long, a: Answer[_]*): Option[Quiz] = {
 
     if (!sessions.contains(userId))
       None
 
-    val p = polls(sessions(userId))
+    val pollId = sessions(userId)
+
+    if (!polls.contains(pollId))
+      None
+
+    val poll = polls(pollId)
+
+    if(!poll.questions.contains(qId))
+      None
+
+    if (poll.answered(qId).contains(userId))
+      None
+
+    poll.answer(userId, qId, a: _*)
 
   }
 
   def execute(user: UserId, cmd: Command): String = {
-/*
-    cmd match {
-      case a: CreatePoll => {val p = Poll(userId = user,
-                                  name = a.name,
-                                  visibility = a.visibility,
-                                  isAnonymous = a.anonymous,
-                                  dateFrom = a.dateFrom,
-                                  dateTo = a.dateTo)
 
-        val elem = addPoll(userId = user, poll = p)
-        if (elem.isDefined)
-            polls = polls + elem.get
- ???
+      (cmd match {
+        case crtPoll: CreatePoll => {
+                                        val p = Poll(userId = user,
+                                          name = crtPoll.name,
+                                          visibility = crtPoll.visibility,
+                                          isAnonymous = crtPoll.anonymous,
+                                          dateFrom = crtPoll.dateFrom,
+                                          dateTo = crtPoll.dateTo,
+                                          questions = Map.empty)
+
+                                        val elem = addPoll(userId = user, poll = p)
+                                        if (elem.isDefined) {
+                                          val poll = elem.get
+                                          polls = polls + poll
+                                          s"Umfrage mit Id ${poll._1} war erstellt"
+                                        }
+        }
 
 
-      case d: DeletePoll => {
-        val id = deletePoll(userId = user, id = d.id)
-        polls = polls - id.getOrElse(Long.MinValue)
+        case dltPoll: DeletePoll => {
+                                        val pollId = deletePoll(userId = user, id = dltPoll.id)
+
+                                        if (pollId.isDefined) {
+                                          val id = pollId.get
+                                            polls = polls - id
+                                          s"Umfrage mit Id ${id} war entfernt"
+                                        }
+                                    }
+
+        case srtPoll: StartPoll => {
+                                        val poll = startPoll(userId = user, id = srtPoll.id)
+                                        if (poll.isDefined) {
+                                          polls = polls.updated(srtPoll.id, poll.get)
+                                          s"Umfrage mit Id ${srtPoll.id} war gestartet"
+                                        }
+
+                                   }
+        case stpPoll: StopPoll => {
+                                    val poll = stopPoll(userId = user, id = stpPoll.id)
+                                    if (poll.isDefined) {
+                                      polls = polls.updated(stpPoll.id, poll.get)
+                                      s"Umfrage mit Id ${stpPoll.id} war gestoppt"
+                                    }
+                                  }
+        case rsl: Result => result(id = rsl.id)
+        /*case _: PollsList.type => list(userId = user)
+        */
+
+      }) match {
+        case msg: String => msg
+        case _ => "Schief gegangen"
       }
-      case srt: StartPoll => startPoll(userId = user, id = srt.id)
-      case stp: StopPoll => stopPoll(userId = user, id = stp.id)
-      case rsl: Result => result(id = rsl.id)
-      case _: PollsList.type => list(userId = user)
-    }*/
 
-    ???
-  }
+    }
 
 }

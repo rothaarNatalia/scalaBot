@@ -1,8 +1,7 @@
 package bot2
 
-import bot2.polls.{Quiz}
+import bot2.polls.{Answer, Quiz, Visibility}
 import org.joda.time.DateTime
-import bot2.polls.Answer
 
 sealed trait Command {
 

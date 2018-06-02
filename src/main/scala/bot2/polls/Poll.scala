@@ -1,8 +1,6 @@
 package bot2.polls
 
-import bot2.{Visibility}
 import com.github.nscala_time.time.Imports._
-
 
 import scala.util.Random
 
@@ -47,8 +45,19 @@ case class Poll(userId: UserId,
 
   }
 
+  def activate(date: DateTime): Boolean = {
 
-  def answer(userId: UserId, qId: Long, a: Answer[_]*) = {
+    val currentDate = DateTime.now()
+
+    if ((date >= dateFrom.getOrElse(currentDate)) ||
+        (date <= dateTo.getOrElse(currentDate)))
+      true
+    else
+      false
+  }
+
+
+  def answer(userId: UserId, qId: Long, a: Answer[_]*): Option[Quiz] = {
 
     val currentDate = DateTime.now()
 
@@ -60,19 +69,25 @@ case class Poll(userId: UserId,
     if (answered(qId).contains(userId))
       None
 
+    val quiz: Quiz = questions(qId)
+
+
     val result =
 
     if(isAnonymous.getOrElse(true))
-      questions(qId).answer(None, a: _ *)
+      quiz.answer(None, a: _ *)
     else
-      questions(qId).answer(Some(userId), a: _ *)
+      quiz.answer(Some(userId), a: _ *)
 
     if (result.nonEmpty) {
       val usrs = answered(qId)
       answered.updated(qId, usrs ++ userId)
-
+      Some(quiz.copy(answers = ( result.get +: quiz.answers)))
     }
+    else
+      None
 
+    ???
   }
 
   def view = {
@@ -88,5 +103,12 @@ case class Poll(userId: UserId,
     else
         None
   }
+
+}
+
+
+object Visibility extends Enumeration {
+
+  val AFTERSTOP, CONTINUOUS = Value
 
 }
