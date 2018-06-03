@@ -1,58 +1,41 @@
 package bot2
 
-import bot2.polls.{Answer, Quiz, Visibility}
+import bot2.polls.{QuizType, Visibility}
 import org.joda.time.DateTime
 
-sealed trait Command {
+sealed trait Command 
 
-  val commandName: String
+case class CreatePoll(name: String, anonymous: Option[Boolean], visibility: Option[Visibility.Value], dateFrom: Option[DateTime], dateTo: Option[DateTime]) extends Command
+case class DeletePoll(id: Long) extends Command
+case class StartPoll(id: Long) extends Command
+case class StopPoll(id: Long) extends Command
+case object PollsList extends Command
+case class Result(id: Long) extends Command
+case class Begin(id: Long) extends Command
+case class AddQuestion(quiz: String, questionType: Option[QuizType.Value], pAnswers: List[String]) extends Command
+case class DeleteQuestion(id: Long) extends Command
+case class UserAnswer(id: Long, a: polls.Answer[_]*) extends Command
+case object View extends Command
+case object End extends Command
+case object Unknown extends Command
+case object Incorrect extends Command
 
-  def execute: String = ???
+sealed trait BotCommands {
 
-}
+  val create_poll = "/create_poll"
+  val list = "/list"
+  val delete_poll = "/delete_poll"
+  val start_poll = "/start_poll"
+  val stop_poll = "/stop_poll"
+  val showResult = "/result"
+  val begin = "/begin"
+  val end = "/end"
+  val add_question = "/add_question"
+  val delete_question = "/delete_question"
+  val view = "/view"
+  val answer = "/answer"
+  val unknown = "unknown"
 
-case class CreatePoll(name: String, anonymous: Option[Boolean], visibility: Option[Visibility.Value], dateFrom: Option[DateTime], dateTo: Option[DateTime]) extends Command {
-  override val commandName = "/create_poll"
-}
-
-case class DeletePoll(id: Long) extends Command {
-  override val commandName = "/delete_poll"
-}
-case class StartPoll(id: Long) extends Command {
-  override val commandName = "/start_poll"
-}
-case class StopPoll(id: Long) extends Command {
-  override val commandName = "/stop_poll"
-}
-case object PollsList extends Command {
-  override val  commandName = "/list"
-}
-case class Result(id: Long) extends Command {
-  override val commandName = "/result"
-}
-case class Begin(id: Long) extends Command {
-  override val commandName = "/begin"
-}
-case class AddQuestion(q: Quiz) extends Command {
-  override val commandName = "/add_question"
-}
-case class DeleteQuestion(id: Long) extends Command {
-  override val commandName = "/delete_question"
-}
-case class UserAnswer(id: Long, a: polls.Answer[_]*) extends Command {
-  override val commandName = "/answer"
-}
-case object View extends Command {
-  override val commandName = "/view"
-}
-case object End extends Command {
-  override val commandName = "/end"
 }
 
-
-case object Unknown extends Command {
-  override val commandName = "unknown"
-}
-case object Incorrect extends Command {
-  override val commandName = "incorrect"
-}
+object BotCommands extends BotCommands

@@ -1,8 +1,8 @@
 package bot2
 
-import bot2.polls.{Quiz, QuizType, Visibility}
+import bot2.polls.{QuizType, Visibility}
 import org.joda.time.DateTime
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import org.joda.time.format.{DateTimeFormat}
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -74,7 +74,7 @@ object Parser extends RegexParsers {
                                             opt(escaping(questionType)) ~
                                             rep(stringParam) ^^ {
                             case quiz ~ qTypq ~ answers =>
-                              AddQuestion(Quiz(qTypq, quiz, Vector.empty, answers))}
+                              AddQuestion(quiz, qTypq, answers)}
 
   private def deleteQuestion = delete_question ~> escaping(digitParam) ^^ {case id => DeleteQuestion(id)}
 
@@ -112,11 +112,6 @@ object Parser extends RegexParsers {
                                                 case aswId: Long => UserAnswer(id, aswId)
                                                 case string: String => UserAnswer(id, string)
                                               }
-                                          }
-                                          case p => {
-                                            val o = p
-                                            println(o)
-                                            Unknown
                                           }
                                        }
 
@@ -175,22 +170,3 @@ object Parser extends RegexParsers {
   }
 }
 
-sealed trait BotCommands {
-
-  val create_poll = "/create_poll"
-  val list = "/list"
-  val delete_poll = "/delete_poll"
-  val start_poll = "/start_poll"
-  val stop_poll = "/stop_poll"
-  val showResult = "/result"
-  val begin = "/begin"
-  val end = "/end"
-  val add_question = "/add_question"
-  val delete_question = "/delete_question"
-  val view = "/view"
-  val answer = "/answer"
-  val unknown = "unknown"
-
-}
-
-object BotCommands extends BotCommands

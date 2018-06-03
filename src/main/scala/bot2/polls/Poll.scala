@@ -11,18 +11,19 @@ case class Poll(userId: UserId,
                 dateFrom: Option[DateTime],
                 dateTo: Option[DateTime],
                 questions: Map[Long, Quiz],
-                isActive: Boolean = false) {
+                var answered: Map[Long, Vector[UserId]],
+                isActive: Boolean = false
+                ) {
+//= questions map (_._1 -> Vector.empty)
 
-  var answered: Map[Long, Vector[UserId]] = questions map (_._1 -> Vector.empty)
-
-  def result: Option[List[String]] = {
+  def result: String = {
 
     val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
 
     if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
-      None//Some(questions)
+      ""//Some(questions)
     else
-      None
+      ""
 
   }
 
@@ -44,18 +45,6 @@ case class Poll(userId: UserId,
     seqCheck && dFCheck && dTCheck
 
   }
-
-  def activate(date: DateTime): Boolean = {
-
-    val currentDate = DateTime.now()
-
-    if ((date >= dateFrom.getOrElse(currentDate)) ||
-        (date <= dateTo.getOrElse(currentDate)))
-      true
-    else
-      false
-  }
-
 
   def answer(userId: UserId, qId: Long, a: Answer[_]*): Option[Quiz] = {
 
@@ -95,11 +84,20 @@ case class Poll(userId: UserId,
     ???
   }
 
-  def addQuestion(q: Quiz): (Long, Quiz) = (Random.nextLong(), q)
+  def addQuestion(q: Quiz): (Long, Quiz) = {
+
+    val qId = Random.nextLong()
+
+    answered = answered.updated(qId, Vector.empty)
+
+    (qId, q)
+  }
 
   def deleteQuestion(qId: Long): Option[(Long, Quiz)] = {
-    if (questions.contains(qId))
-        Some(qId, questions(qId))
+    if (questions.contains(qId)) {
+      answered = answered - qId
+      Some(qId, questions(qId))
+    }
     else
         None
   }

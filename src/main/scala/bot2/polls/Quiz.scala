@@ -2,8 +2,8 @@ package bot2.polls
 
 import bot2.UserAnswer
 
-case class Quiz(quizType: Option[QuizType.Value],
-                quiz: String,
+case class Quiz(quiz: String,
+                quizType: Option[QuizType.Value],
                 answers: Vector[(Option[UserId], Seq[Answer[_]])],
                 pAnswers: List[String]) {
 
@@ -12,7 +12,7 @@ case class Quiz(quizType: Option[QuizType.Value],
 
   import QuizType._
 
-  private def isCorrect(a: Answer[_]*): Boolean = {
+  private def answerIsCorrect(a: Answer[_]*): Boolean = {
 
     quizType match {
       case MULTI => a forall (v => {val asw: Int = Integer.parseInt(v.answer.toString); possibleAnswers.contains(asw)})
@@ -24,7 +24,7 @@ case class Quiz(quizType: Option[QuizType.Value],
 
   def answer(u: Option[UserId], a: Answer[_]*): Option[(Option[UserId], Seq[Answer[_]])] = {
 
-    if ((!isCorrect(a: _*)) )//|| (answered.contains(u)))
+    if ((!answerIsCorrect(a: _*)) )//|| (answered.contains(u)))
       None
     else
       Some(u, a)
