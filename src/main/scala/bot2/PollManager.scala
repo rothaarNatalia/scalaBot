@@ -13,6 +13,26 @@ object PollManager {
 
   val idGenerator = new Random()
 
+  private def getPollFromSession(userId: UserId): Option[(Long, Poll)] = {
+
+    if (!sessions.contains(userId))
+      None
+
+    val pollId = sessions(userId)
+
+    if (!polls.contains(pollId))
+      None
+
+    Some(pollId, polls(pollId))
+  }
+
+  private def getPoll(pId: Long): Option[Poll] = {
+
+    if (!polls.contains(pId))
+      None
+    else Some(polls(pId))
+  }
+
   private def addPoll(userId: UserId, poll: Poll): Option[(Long, Poll)] = {
     if(poll.isCorrect) {
     val id = idGenerator.nextLong()
@@ -23,52 +43,44 @@ object PollManager {
 
   private def deletePoll(userId: UserId, id: Long): Option[Long] = {
 
-    if (!polls.contains(id))
-      None
-
-    if ((polls(id).userId == userId))
-      Some(id)
-    else None
+    getPoll(id) flatMap( p =>  if (p.userId == userId) Some(id) else None)
 
   }
 
   private def startPoll(userId: UserId, id: Long): Option[(Long, Poll)] = {
 
-    if (!polls.contains(id))
-      None
+    getPoll(id) flatMap( p =>
 
-    val poll = polls(id)
-
-    if ((poll.dateFrom.isEmpty) && (poll.userId == userId) && (!poll.isActive))
-        Some(id, poll.copy(dateFrom = Some(DateTime.now()),  isActive = true))
-    else None
+                      if ((p.dateFrom.isEmpty) && (p.userId == userId) && (!p.isActive))
+                        Some(id, p.copy(dateFrom = Some(DateTime.now()),  isActive = true))
+                    else None )
 
   }
 
   private def stopPoll(userId: UserId, id: Long): Option[(Long, Poll)] = {
 
-    if (!polls.contains(id))
-      None
+    getPoll(id) flatMap( p =>
 
-    val poll = polls(id)
-
-    if ((poll.dateTo.isEmpty) && (poll.userId == userId) && (poll.isActive))
-      Some(id, poll.copy(isActive = false, dateTo = Option(DateTime.now())))
-    else None
+    if ((p.dateTo.isEmpty) && (p.userId == userId) && (p.isActive))
+      Some(id, p.copy(isActive = false, dateTo = Option(DateTime.now())))
+    else None)
 
   }
 
   private def result(id: Long): Option[String] = {
 
-    if (!polls.contains(id))
-      None
-    else
-      Some(polls(id).result)
+    getPoll(id) flatMap( p => Some(p.result))
   }
 
   private def list(userId: UserId): Option[String] = {
 
     Some("Liste von den Umfragen: \n" + polls.map(p => s"#${p._1} ${p._2.name}\n").reduce(_ + _))
+
+  }
+
+  private def view(userId: UserId): Option[String] = {
+
+    getPollFromSession(userId) flatMap(p => Some(p._2.view))
 
   }
 
@@ -90,43 +102,22 @@ object PollManager {
 
   private def addQuestion(userId: UserId, q: Quiz): Option[(Long, Poll)] = {
 
-    if (!sessions.contains(userId))
-      None
-
-    val pollId = sessions(userId)
-
-    if (!polls.contains(pollId))
-      None
-
-    val p = polls(pollId)
-
-    if (p.userId != userId)
-        None
-
-
-    val quiz = p.addQuestion(q)
-
-    Some(pollId, p.copy(questions = (p.questions + quiz)))
+    getPollFromSession(userId) flatMap (p => if (p._2.userId != userId) None
+                                                else {
+                                            val quiz = p._2.addQuestion(q)
+                                            Some(p._1, p._2.copy(questions = (p._2.questions + quiz)))})
 
   }
 
   private def deleteQuestion(userId: UserId, qId: Long): Option[(Long, Poll)] = {
 
-    if (!sessions.contains(userId))
-      None
+    getPollFromSession(userId) flatMap (p =>
 
-    val pollId = sessions(userId)
-
-    if (!polls.contains(pollId))
-      None
-
-    val p = polls(pollId)
-
-    if (p.userId != userId)
+      if (p._2.userId != userId)
       None
     else{
-        p.deleteQuestion(qId) flatMap (v => Some(pollId, p.copy(questions = (p.questions - v._1))))
-    }
+        p._2.deleteQuestion(qId) flatMap (v => Some(p._1, p._2.copy(questions = (p._2.questions - v._1))))
+    })
 
   }
 
@@ -152,10 +143,10 @@ object PollManager {
                                                        poll.copy(questions = poll.questions.updated(qId, q),
                                                                  answered =  {if (poll.answered.contains(qId)) {
                                                                    val aswUsers = poll.answered(qId);
-                                                                   poll.answered.updated(qId, (aswUsers :+ userId))
+                                                                   poll.answered.updated(qId, (aswUsers + userId))
                                                                  }
                                                                  else
-                                                                   poll.answered + (qId -> Vector(userId))})
+                                                                   poll.answered + (qId -> Set(userId))})
                                                        ))
   }
 
@@ -222,6 +213,9 @@ object PollManager {
                                           deleteQuestion(user, dltQuiz.id).
                                             flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${dltQuiz.id} war entfernt")})
                                         }
+        case vw: View.type => {
+                                view(user)
+                              }
       }) match {
         case Some(msg: String) => msg
         case None => "Schief gegangen"

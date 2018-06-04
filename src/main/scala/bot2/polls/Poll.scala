@@ -11,7 +11,7 @@ case class Poll(userId: UserId,
                 dateFrom: Option[DateTime],
                 dateTo: Option[DateTime],
                 questions: Map[Long, Quiz],
-                var answered: Map[Long, Vector[UserId]],
+                var answered: Map[Long, Set[UserId]],
                 isActive: Boolean = false
                 ) {
 //= questions map (_._1 -> Vector.empty)
@@ -79,16 +79,21 @@ case class Poll(userId: UserId,
     ???
   }
 
-  def view = {
+  def view: String = {
 
-    ???
+    s"""
+       |Die Umfrage $name
+       |Die Fragen:
+       |${questions.mapValues(v => v.quiz + "\n").view.reduce(_ + _)}
+       |
+     """.stripMargin
   }
 
   def addQuestion(q: Quiz): (Long, Quiz) = {
 
     val qId = Random.nextLong()
 
-    answered = answered.updated(qId, Vector.empty)
+    answered = answered.updated(qId, Set.empty)
 
     (qId, q)
   }
