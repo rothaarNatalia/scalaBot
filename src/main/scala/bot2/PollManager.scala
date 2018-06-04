@@ -1,7 +1,7 @@
 package bot2
 
 
-import bot2.polls.{Answer, Poll, Quiz, UserId}
+import bot2.polls._
 import org.joda.time.DateTime
 
 import scala.util.Random
@@ -202,7 +202,7 @@ object PollManager {
                               }
         case addQuiz: AddQuestion => {
           val q = Quiz( addQuiz.quiz,
-            addQuiz.questionType,
+            addQuiz.questionType.getOrElse(QuizType.OPEN),
             Vector.empty,
             addQuiz.pAnswers)
 

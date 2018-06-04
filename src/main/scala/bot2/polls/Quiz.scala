@@ -3,7 +3,7 @@ package bot2.polls
 import bot2.UserAnswer
 
 case class Quiz(quiz: String,
-                quizType: Option[QuizType.Value],
+                quizType: QuizType.Value,
                 answers: Vector[(Option[UserId], Seq[Answer[_]])],
                 pAnswers: List[String]) {
 
@@ -32,7 +32,12 @@ case class Quiz(quiz: String,
   }
 
   def view = {
-    ""
+    s"""
+       |Die Frage $quiz
+       |Der Typ ${quizType}
+       |Die moegliche Antworten sind
+       |${pAnswers.reduce(_ + " " + _)}
+     """.stripMargin
   }
 
 }

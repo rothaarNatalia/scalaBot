@@ -18,12 +18,33 @@ case class Poll(userId: UserId,
 
   def result: String = {
 
+    def hystogram(q: Quiz): String = {
+
+      val starCount = 13 //magic
+
+      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a)))
+
+      val aswrs = usrAswrs.groupBy(_._2).map(mr => (mr._1, mr._2.length))
+
+      aswrs.view.map(v =>  s"${v._1}   ${ (1 to (starCount / v._2)).view.map("*").reduce(_ + _)} \n").reduce(_ + _)
+
+    }
+
     val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
 
-    if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive)))
-      ""//Some(questions)
+    if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive))){
+      questions map (q => {
+        s"""Die Frage mit Id ${q._1}
+           |Das Ergebniss:
+           |${
+          q._2.answers
+        }
+           |
+         """.stripMargin
+      })
+    }
     else
-      ""
+      "Noch keine Ergebnisse"
 
   }
 
@@ -60,13 +81,12 @@ case class Poll(userId: UserId,
 
     val quiz: Quiz = questions(qId)
 
-
     val result =
 
     if(isAnonymous.getOrElse(true))
-      quiz.answer(None, a: _ *)
+      quiz.answer(None, a.distinct: _ *)
     else
-      quiz.answer(Some(userId), a: _ *)
+      quiz.answer(Some(userId), a.distinct: _ *)
 
     if (result.nonEmpty) {
       val usrs = answered(qId)
@@ -84,7 +104,7 @@ case class Poll(userId: UserId,
     s"""
        |Die Umfrage $name
        |Die Fragen:
-       |${questions.mapValues(v => v.quiz + "\n").view.reduce(_ + _)}
+       |${questions.view.map(v => v._2.quiz + "\n").reduce(_ + _)}
        |
      """.stripMargin
   }
