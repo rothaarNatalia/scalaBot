@@ -17,6 +17,7 @@ object Dependencies {
       "com.typesafe.play" %% "play-json" % "2.6.6",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
       "com.github.nscala-time" %% "nscala-time" % "2.18.0",
+      "info.mukel" %% "telegrambot4s" % "3.0.14",
       "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
 
   )

@@ -16,38 +16,6 @@ case class Poll(userId: UserId,
                 ) {
 //= questions map (_._1 -> Vector.empty)
 
-  def result: String = {
-
-    def hystogram(q: Quiz): String = {
-
-      val starCount = 13 //magic
-
-      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a)))
-
-      val aswrs = usrAswrs.groupBy(_._2).map(mr => (mr._1, mr._2.length))
-
-      aswrs.view.map(v =>  s"${v._1}   ${ (1 to (starCount / v._2)).view.map("*").reduce(_ + _)} \n").reduce(_ + _)
-
-    }
-
-    val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
-
-    if ((vsb == Visibility.CONTINUOUS) || ((vsb == Visibility.AFTERSTOP) && (!isActive))){
-      questions map (q => {
-        s"""Die Frage mit Id ${q._1}
-           |Das Ergebniss:
-           |${
-          q._2.answers
-        }
-           |
-         """.stripMargin
-      })
-    }
-    else
-      "Noch keine Ergebnisse"
-
-  }
-
   def isCorrect: Boolean = {
 
     val s = Seq(isAnonymous.isDefined, visibility.isDefined, dateFrom.isDefined, dateTo.isDefined)
@@ -55,15 +23,69 @@ case class Poll(userId: UserId,
     val seqCheck = !(s zip s.tail).contains((false, true))
 
     val dFCheck = if (dateFrom.isDefined)
-                        dateFrom.exists(_.isAfterNow)
-                  else true
+      dateFrom.exists(_.isAfterNow)
+    else true
 
     val dTCheck = if (dateTo.isDefined)
-                        dateTo.exists(_.isAfter(dateFrom.get))
-                   else true
+      dateTo.exists(_.isAfter(dateFrom.get))
+    else true
 
 
     seqCheck && dFCheck && dTCheck
+
+  }
+
+  def result: String = {
+
+    import QuizType._
+
+    def histogram(q: Quiz): String = {
+
+      val starCount = 13 //magic
+
+      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a))).groupBy(_._2)
+
+      val aswrs = usrAswrs.map(mr => (mr._1, mr._2.length))
+
+      val histo = aswrs.view.map(v =>  s"${v._1}   ${ (1 to (starCount / v._2)).view.map("*").reduce(_ + _)} \n").reduce(_ + _)
+
+
+      val usrs = if (isAnonymous == Some(true)) ""
+                 else usrAswrs.view.map(v => s"${v._1}: ${v._2.view.map(_._1.getOrElse("") + " ")} \n") reduce(_ + _)
+
+      histo + "\n" + usrs
+
+    }
+
+    def list(q: Quiz): String = {
+
+      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a)))
+
+      if (isAnonymous == Some(true))
+        usrAswrs.view.map(_._2 + " ") reduce(_ + _)
+      else
+        usrAswrs.view.map(v => s"${v._1.getOrElse("")}: $v._2 \n") reduce(_ + _)
+
+    }
+
+    val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
+
+    if ((vsb == Some(Visibility.CONTINUOUS)) || ((vsb == Some(Visibility.AFTERSTOP)) && (!isActive))){
+      questions.view map (q => {
+        s"""Die Frage mit Id ${q._1}
+           |Das Ergebniss:
+           |${
+          q._2.quizType match {
+            case MULTI | CHOICE => histogram(q._2)
+            case OPEN => list(q._2)
+          }
+        }
+           |
+         """.stripMargin
+      }) reduce(_ + _)
+    }
+    else
+      "Noch keine Ergebnisse"
 
   }
 

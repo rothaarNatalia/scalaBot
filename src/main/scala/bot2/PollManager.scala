@@ -36,7 +36,10 @@ object PollManager {
   private def addPoll(userId: UserId, poll: Poll): Option[(Long, Poll)] = {
     if(poll.isCorrect) {
     val id = idGenerator.nextLong()
-        Option((id, poll))
+        Option((id, poll.copy(visibility = if (poll.visibility.isDefined) poll.visibility
+                                                else Some(Visibility.AFTERSTOP),
+                              isAnonymous = if (poll.isAnonymous.isDefined) poll.isAnonymous
+                                            else Some(true))))
     }
     else None
   }
