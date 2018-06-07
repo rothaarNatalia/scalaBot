@@ -8,15 +8,24 @@ case class Quiz(quiz: String,
                 pAnswers: List[String]) {
 
   //private val answers: Vector[(Option[UserId], Seq[Answer[_]])] = Vector.empty
-  private val possibleAnswers = (0 to pAnswers.length - 1) zip (pAnswers) toMap
+  private val possibleAnswers = (1L to pAnswers.length) zip (pAnswers) toMap
 
   import QuizType._
 
   private def answerIsCorrect(a: Answer[_]*): Boolean = {
 
     quizType match {
-      case MULTI => a forall (v => {val asw: Int = Integer.parseInt(v.answer.toString); possibleAnswers.contains(asw)})
-      case CHOICE => a.headOption map (v => {val asw: Int = Integer.parseInt(v.answer.toString); possibleAnswers.contains(asw)}) getOrElse(false)
+      case MULTI => {a forall (_ match {
+        case Answer(x: Long) => possibleAnswers.contains(x)
+        case _ => false
+      } )}
+
+      case CHOICE => { a match {
+        case Answer(xs: Long) :: Nil => possibleAnswers.contains(xs)
+        case _ => false
+      }
+
+      }
       case OPEN => true
     }
 
