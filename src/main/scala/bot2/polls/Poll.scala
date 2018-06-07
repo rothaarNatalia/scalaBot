@@ -47,7 +47,7 @@ case class Poll(userId: UserId,
 
       val aswrs = usrAswrs.map(mr => (mr._1, mr._2.length))
 
-      val histo = aswrs.view.map(v =>  s"${v._1}   ${ (1 to (starCount / v._2)).view.map("*").reduce(_ + _)} \n").reduce(_ + _)
+      val histo = aswrs.view.map(v =>  {s"$v._1   ${ "*" * (starCount / v._2)} \n"}).reduce(_ + _)
 
 
       val usrs = if (isAnonymous == Some(true)) ""
