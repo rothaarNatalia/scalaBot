@@ -78,27 +78,6 @@ object Parser extends RegexParsers {
 
   private def deleteQuestion = delete_question ~> escaping(digitParam) ^^ {case id => DeleteQuestion(id)}
 
-  import bot2.polls.Answer
-/*  private def userAnswerInt = escaping((stringParam | digitParam)) ^^ {
-                            case id: Int =>  id
-                            case str: String => str
-                            }
-
-  private def userAnswerString = escaping(stringParam) ^^ {
-    case id: Int =>  id
-    case str: String => str
-  }  */
-
-
-  private def fake = escaping((digitParam).+) ^^ {
-    case p => {
-      val o = p
-      println(o)
-      Unknown
-    }
-
-  }
-
   private def answer = BotCommands.answer ~> escaping(digitParam) ~ escaping( digitParam.+ |
                                                                               digitParam |
                                                                               stringParam
@@ -108,7 +87,7 @@ object Parser extends RegexParsers {
                                           case id ~ uAnswers => {
 
                                               uAnswers match {
-                                                case aswIdSeq: Seq[Long] => UserAnswer(id, aswIdSeq)
+                                                case aswIdSeq: List[Long] => UserAnswer(id, aswIdSeq)
                                                 case aswId: Long => UserAnswer(id, aswId)
                                                 case string: String => UserAnswer(id, string)
                                               }
@@ -128,21 +107,83 @@ object Parser extends RegexParsers {
 
   }
 
+  val manager = PollManager
 
   def main(args: Array[String]): Unit = {
 
 
-    val l = parseInput(
+
+    val c = parseInput(
       """
-        |/answer
-        |(0)
+        |/create_poll
+        |(johnny)
+        |(no)
+        |(continuous)
         |
-        |(1 4 5 5 12)
+        |""".stripMargin)
+
+    val rslC = manager.execute("rothaar", c)
+
+    val pId =rslC
+
+    val b = parseInput(
+      s"""
+        |/begin ($rslC)
+        |""".stripMargin)
+
+    val rslB = manager.execute("rothaar", b)
+
+    val aq = parseInput(
+      """
+        |/add_question
+        |(quiz?)
+        |(multi)
+        |eins
+        |zwei
+        |drei
+        |""".stripMargin)
+
+    val rslAq = manager.execute("rothaar", aq)
+
+    val qId = rslAq
+
+    val sP = parseInput(
+      s"""
+        |/start_poll ($rslC)
+        |""".stripMargin)
+
+    val rslSpF = manager.execute("rothaar_fake", sP)
+
+    val rslSp = manager.execute("rothaar", sP)
+
+
+    val l = parseInput(
+      s"""
+        |/answer
+        |($qId)
+        |
+        |(1 2)
         |
         |""".stripMargin)
 
     println(l)
 
+    val rslA = manager.execute("rothaar", l)
+
+    println(rslA)
+
+    val stP = parseInput(
+      s"""
+         |/stop_poll ($rslC)
+         |""".stripMargin)
+
+    val rslStpF = manager.execute("rothaar_fake", stP)
+
+    val rslStp = manager.execute("rothaar", stP)
+
+    val rslA1 = manager.execute("rothaar", l)
+
+    println(rslA1)
 
     /*val p =
       parse(createPoll,

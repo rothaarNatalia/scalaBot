@@ -15,27 +15,28 @@ object PollManager {
 
   private def getPollFromSession(userId: UserId): Option[(Long, Poll)] = {
 
-    if (!sessions.contains(userId))
-      None
+    val poll = for{
+                    session <- sessions if (session._1 == userId)
+                    poll <- polls if (poll._1 == session._2)
+                  } yield (poll)
 
-    val pollId = sessions(userId)
+    poll.headOption
 
-    if (!polls.contains(pollId))
-      None
-
-    Some(pollId, polls(pollId))
   }
 
   private def getPoll(pId: Long): Option[Poll] = {
 
-    if (!polls.contains(pId))
-      None
-    else Some(polls(pId))
+    val poll =  for {
+                        poll <- polls if (poll._1 == pId)
+                      } yield (poll._2)
+
+    poll.headOption
+
   }
 
   private def addPoll(userId: UserId, poll: Poll): Option[(Long, Poll)] = {
     if(poll.isCorrect) {
-    val id = idGenerator.nextLong()
+    val id = math.abs(idGenerator.nextLong)
         Option((id, poll.copy(visibility = if (poll.visibility.isDefined) poll.visibility
                                                 else Some(Visibility.AFTERSTOP),
                               isAnonymous = if (poll.isAnonymous.isDefined) poll.isAnonymous
@@ -103,12 +104,12 @@ object PollManager {
       Some((userId, sessions(userId)))
   }
 
-  private def addQuestion(userId: UserId, q: Quiz): Option[(Long, Poll)] = {
+  private def addQuestion(userId: UserId, q: Quiz): Option[(Long, Poll, Long)] = {
 
     getPollFromSession(userId) flatMap (p => if (p._2.userId != userId) None
                                                 else {
                                             val quiz = p._2.addQuestion(q)
-                                            Some(p._1, p._2.copy(questions = (p._2.questions + quiz)))})
+                                            Some(p._1, p._2.copy(questions = (p._2.questions + quiz)), quiz._1)})
 
   }
 
@@ -124,40 +125,40 @@ object PollManager {
 
   }
 
-  private def answer(userId: UserId, qId: Long, a: Answer[_]*): Option[(Long, Poll)] = {
+  private def answer(userId: UserId, qId: Long, a: Answer[_]): Option[(Long, Poll)] = {
 
-    if (!sessions.contains(userId))
-      None
+    val usersPoll = ( for{
+                          session <- sessions if (session._1 == userId)
+                          poll <- polls if (poll._1 == session._2)
+                          quiz <- poll._2.questions if (quiz._1 == qId)
+                        } yield (poll._1: Long, poll._2: Poll, quiz._1: Long)).
+                      headOption
 
-    val pollId = sessions(userId)
 
-    if (!polls.contains(pollId))
-      None
+    usersPoll match {
+      case None => None
+      case Some((pollId, poll, quizId)) => {
 
-    val poll = polls(pollId)
+        poll.answer(userId, quizId, a) flatMap
+          (q => Some(pollId,
+                      poll.copy(questions = poll.questions.updated(quizId, q),
+                        answered =  {if (poll.answered.contains(quizId)) {
+                          val aswUsers = poll.answered(quizId);
+                          poll.answered.updated(qId, (aswUsers + userId))
+                        }
+                        else
+                          poll.answered + (quizId -> Set(userId))})
+                    ))
+      }
+    }
 
-    if(!poll.questions.contains(qId))
-      None
-
-    if (poll.answered(qId).contains(userId))
-      None
-
-    poll.answer(userId, qId, a: _*) flatMap (q => Some(pollId,
-                                                       poll.copy(questions = poll.questions.updated(qId, q),
-                                                                 answered =  {if (poll.answered.contains(qId)) {
-                                                                   val aswUsers = poll.answered(qId);
-                                                                   poll.answered.updated(qId, (aswUsers + userId))
-                                                                 }
-                                                                 else
-                                                                   poll.answered + (qId -> Set(userId))})
-                                                       ))
   }
 
   def execute(user: UserId, cmd: Command): String = {
 
       (cmd match {
         case asw: UserAnswer => {
-                                      answer(user, asw.id, asw.a: _*).
+                                      answer(user, asw.id, asw.a).
                                         flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Ihrer Antwort auf die Frage ${asw.id} war gespeichert")})
                                 }
         case crtPoll: CreatePoll => {
@@ -171,7 +172,8 @@ object PollManager {
                                           answered = Map.empty)
 
                                         addPoll(userId = user, poll = p)
-                                          .flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
+                                          //.flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
+                                          .flatMap(poll => {polls = polls + poll; Some(s"${poll._1}")})
                                     }
         case dltPoll: DeletePoll => {
                                         deletePoll(userId = user, id = dltPoll.id)
@@ -210,7 +212,8 @@ object PollManager {
             addQuiz.pAnswers)
 
           addQuestion(userId = user, q = q)
-            .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._1} war hinzugefuegt")})
+            //.flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._3} war hinzugefuegt")})
+            .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"${p._3}")})
         }
         case dltQuiz: DeleteQuestion => {
                                           deleteQuestion(user, dltQuiz.id).
@@ -221,7 +224,7 @@ object PollManager {
                               }
       }) match {
         case Some(msg: String) => msg
-        case None => "Schief gegangen"
+        case _ => "Schief gegangen"
       }
 
     }

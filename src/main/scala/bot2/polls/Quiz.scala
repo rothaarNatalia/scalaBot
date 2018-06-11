@@ -1,29 +1,32 @@
 package bot2.polls
 
-import bot2.UserAnswer
 
 case class Quiz(quiz: String,
                 quizType: QuizType.Value,
-                answers: Vector[(Option[UserId], Seq[Answer[_]])],
+                answers: Vector[(Option[UserId], Answer[_])],
                 pAnswers: List[String]) {
 
-  //private val answers: Vector[(Option[UserId], Seq[Answer[_]])] = Vector.empty
   private val possibleAnswers = (1L to pAnswers.length) zip (pAnswers) toMap
 
   import QuizType._
 
-  private def answerIsCorrect(a: Answer[_]*): Boolean = {
+  private def answerIsCorrect(a: Answer[_]): Boolean = {
 
     quizType match {
-      case MULTI => {a forall (_ match {
-        case Answer(x: Long) => possibleAnswers.contains(x)
-        case _ => false
-      } )}
+      case MULTI => {a match {
+                        case Answer(x: List[_]) => {
+                          if (!(x.distinct.length == x.length))
+                            false
+                          else
+                          x.view.collect({case a: Long => possibleAnswers.contains(a)
+                                          case _ => false}) reduce (_ && _)}
+                        case _ => false
+                    }}
 
       case CHOICE => { a match {
-        case Answer(xs: Long) :: Nil => possibleAnswers.contains(xs)
-        case _ => false
-      }
+                          case Answer(xs: Long) => possibleAnswers.contains(xs)
+                          case _ => false
+                        }
 
       }
       case OPEN => true
@@ -31,12 +34,12 @@ case class Quiz(quiz: String,
 
   }
 
-  def answer(u: Option[UserId], a: Answer[_]*): Option[(Option[UserId], Seq[Answer[_]])] = {
+  def answer(u: Option[UserId], a: Answer[_]): Option[(Option[UserId],Answer[_])] = {
 
-    if ((!answerIsCorrect(a: _*)) )//|| (answered.contains(u)))
-      None
+    if (answerIsCorrect(a))
+        Some(u, a)
     else
-      Some(u, a)
+        None
 
   }
 

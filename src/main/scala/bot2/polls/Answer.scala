@@ -26,9 +26,9 @@ object Answer {
 
   }
 
-  implicit class SeqLongAnswer(val a: Seq[Long]) extends Answer[Seq[Long]] {
+  implicit class ListLongAnswer(val a: List[Long]) extends Answer[List[Long]] {
 
-    override def answer: Seq[Long] = a
+    override def answer: List[Long] = a
 
     override def toString = a.toString
   }

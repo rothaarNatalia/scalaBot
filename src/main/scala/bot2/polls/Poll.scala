@@ -14,7 +14,7 @@ case class Poll(userId: UserId,
                 var answered: Map[Long, Set[UserId]],
                 isActive: Boolean = false
                 ) {
-//= questions map (_._1 -> Vector.empty)
+
 
   def isCorrect: Boolean = {
 
@@ -43,7 +43,14 @@ case class Poll(userId: UserId,
 
       val starCount = 13 //magic
 
-      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a))).groupBy(_._2)
+//      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a))).groupBy(_._2)
+
+/*      val usrAswrs = q.answers.view.map( v =>  v._2 match {
+        case Answer(x: Long) => (v._1, x)
+        case Answer(xs: List[_]) => xs.collect({case a: Long => (v._1, a)})
+      })
+
+      //  v._2 map(a => (v._1, a))).groupBy(_._2)
 
       val aswrs = usrAswrs.map(mr => (mr._1, mr._2.length))
 
@@ -53,18 +60,16 @@ case class Poll(userId: UserId,
       val usrs = if (isAnonymous == Some(true)) ""
                  else usrAswrs.view.map(v => s"${v._1}: ${v._2.view.map(_._1.getOrElse("") + " ")} \n") reduce(_ + _)
 
-      histo + "\n" + usrs
-
+      histo + "\n" + usrs*/
+    ""
     }
 
     def list(q: Quiz): String = {
 
-      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a)))
-
       if (isAnonymous == Some(true))
-        usrAswrs.view.map(_._2 + " ") reduce(_ + _)
+        q.answers.view.map(_._2 + " ") reduce(_ + _)
       else
-        usrAswrs.view.map(v => s"${v._1.getOrElse("")}: $v._2 \n") reduce(_ + _)
+        q.answers.view.map(v => s"${(v._1).getOrElse("")}: $v._2 \n") reduce(_ + _)
 
     }
 
@@ -89,13 +94,38 @@ case class Poll(userId: UserId,
 
   }
 
-  def answer(userId: UserId, qId: Long, a: Answer[_]*): Option[Quiz] = {
+  def answer(userId: UserId, qId: Long, a: Answer[_]): Option[Quiz] = {
 
     val currentDate = DateTime.now()
 
-    if ((!questions.contains(qId)) ||
-        (currentDate < dateFrom.getOrElse(currentDate)) ||
-        (currentDate > dateTo.getOrElse(currentDate)))
+    val userQuiz = (for {
+                          quiz <- questions if ((quiz._1 == qId) &&
+                                                (currentDate >= dateFrom.getOrElse(currentDate)) &&
+                                                (currentDate <= dateTo.getOrElse(currentDate)))
+                          users <- answered if (answered.contains(qId))
+                        } yield (quiz, users._2.contains(userId))).
+                      headOption
+
+
+    userQuiz match {
+      case Some(((quizId, quiz), false))  => {
+
+                                    val result =  if(isAnonymous.getOrElse(true))
+                                      quiz.answer(None, a)
+                                    else
+                                      quiz.answer(Some(userId), a)
+
+                                    result.flatMap(a => { val usrs = answered(quizId);
+                                                    answered.updated(quizId, usrs ++ userId);
+                                                    Some(quiz.copy(answers = (a +: quiz.answers)))}
+                                    )}
+      case _ => None
+    }
+
+
+/*    if ((!questions.contains(qId)) ||
+        (currentDate <= dateFrom.getOrElse(currentDate)) ||
+        (currentDate >= dateTo.getOrElse(currentDate)))
       None
 
     if (answered(qId).contains(userId))
@@ -103,12 +133,10 @@ case class Poll(userId: UserId,
 
     val quiz: Quiz = questions(qId)
 
-    val result =
-
-    if(isAnonymous.getOrElse(true))
-      quiz.answer(None, a.distinct: _ *)
-    else
-      quiz.answer(Some(userId), a.distinct: _ *)
+    val result =  if(isAnonymous.getOrElse(true))
+                      quiz.answer(None, a.distinct: _ *)
+                  else
+                      quiz.answer(Some(userId), a.distinct: _ *)
 
     if (result.nonEmpty) {
       val usrs = answered(qId)
@@ -117,8 +145,8 @@ case class Poll(userId: UserId,
     }
     else
       None
+    */
 
-    ???
   }
 
   def view: String = {
@@ -133,7 +161,7 @@ case class Poll(userId: UserId,
 
   def addQuestion(q: Quiz): (Long, Quiz) = {
 
-    val qId = Random.nextLong()
+    val qId = math.abs(Random.nextLong())
 
     answered = answered.updated(qId, Set.empty)
 
