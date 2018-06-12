@@ -1,15 +1,14 @@
-package bot2
+package bot.poll
 
-
-import bot2.polls._
+import bot._
 import org.joda.time.DateTime
 
 import scala.util.Random
 
 object PollManager {
 
-  private var polls: Map[Long, Poll] = Map()
-  private var sessions: Map[UserId, Long] = Map()
+  private var polls: Map[Long, Poll] = Map.empty
+  private var sessions: Map[UserId, Long] = Map.empty
 
   val idGenerator = new Random()
 
@@ -78,7 +77,10 @@ object PollManager {
 
   private def list(userId: UserId): Option[String] = {
 
-    Some("Liste von den Umfragen: \n" + polls.map(p => s"#${p._1} ${p._2.name}\n").reduce(_ + _))
+    if (polls.isEmpty)
+      Some("Es gibt keine Umfragen")
+    else
+      Some("Liste von den Umfragen: \n" + polls.map(p => s"#${p._1} ${p._2.name}\n").reduce(_ + _))
 
   }
 
@@ -177,7 +179,9 @@ object PollManager {
                                     }
         case dltPoll: DeletePoll => {
                                         deletePoll(userId = user, id = dltPoll.id)
-                                          .flatMap(id => {polls = polls - id; Some(s"Die Umfrage mit Id ${id} war entfernt")})
+                                          .flatMap(id => {polls = polls - id;
+                                                          sessions = sessions -- sessions.withFilter(_._2 == id).map(_._1);
+                                                          Some(s"Die Umfrage mit Id ${id} war entfernt")})
                                     }
         case srtPoll: StartPoll => {
                                         startPoll(userId = user, id = srtPoll.id)
@@ -186,7 +190,9 @@ object PollManager {
                                    }
         case stpPoll: StopPoll => {
                                     stopPoll(userId = user, id = stpPoll.id)
-                                      .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Umfrage mit Id ${p._1} war gestoppt")})
+                                      .flatMap(p => {polls = polls.updated(p._1, p._2);
+                                        sessions = sessions -- sessions.withFilter(_._2 == stpPoll.id).map(_._1);
+                                        Some(s"Die Umfrage mit Id ${p._1} war gestoppt")})
                                   }
         case rsl: Result => {
                                 result(id = rsl.id)
@@ -202,7 +208,9 @@ object PollManager {
                            }
         case e: End.type => {
                                 end(user).
-                                  flatMap(e => {sessions = sessions - e._1 ;
+                                  flatMap(e => {
+                                    if (sessions.contains(e._1))
+                                      sessions = sessions - e._1 ;
                                     Some(s"Raus aus dem Kontext von der Umfrage ${e._2}")})
                               }
         case addQuiz: AddQuestion => {
@@ -217,7 +225,9 @@ object PollManager {
         }
         case dltQuiz: DeleteQuestion => {
                                           deleteQuestion(user, dltQuiz.id).
-                                            flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${dltQuiz.id} war entfernt")})
+                                            flatMap(p => {polls = polls.updated(p._1, p._2);
+                                              sessions = sessions -- sessions.withFilter(_._2 == dltQuiz.id).map(_._1);
+                                              Some(s"Die Frage mit Id ${dltQuiz.id} war entfernt")})
                                         }
         case vw: View.type => {
                                 view(user)

@@ -1,6 +1,6 @@
-package bot2
+package bot
 
-import bot2.polls.{QuizType, Visibility}
+import bot.poll.{QuizType, Visibility}
 import org.joda.time.DateTime
 
 sealed trait Command 
@@ -14,7 +14,7 @@ case class Result(id: Long) extends Command
 case class Begin(id: Long) extends Command
 case class AddQuestion(quiz: String, questionType: Option[QuizType.Value], pAnswers: List[String]) extends Command
 case class DeleteQuestion(id: Long) extends Command
-case class UserAnswer(id: Long, a: polls.Answer[_]) extends Command
+case class UserAnswer(id: Long, a: poll.Answer[_]) extends Command
 case object View extends Command
 case object End extends Command
 case object Unknown extends Command

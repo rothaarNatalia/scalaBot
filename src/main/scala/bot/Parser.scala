@@ -1,8 +1,8 @@
-package bot2
+package bot
 
-import bot2.polls.{QuizType, Visibility}
+import bot.poll.{PollManager, QuizType, Visibility}
 import org.joda.time.DateTime
-import org.joda.time.format.{DateTimeFormat}
+import org.joda.time.format.DateTimeFormat
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -62,7 +62,7 @@ object Parser extends RegexParsers {
 
   private def stopPoll = stop_poll ~> escaping(digitParam) ^^ { case id => StopPoll(id) }
 
-  private def result = showResult ^^ { case _ => Result }
+  private def result = showResult ~> escaping(digitParam) ^^ { case id => Result(id) }
 
   private def begin = BotCommands.begin ~> escaping(digitParam) ^^ {case id => Begin(id)}
 
@@ -107,11 +107,23 @@ object Parser extends RegexParsers {
 
   }
 
-  val manager = PollManager
+
+
 
   def main(args: Array[String]): Unit = {
 
+    val manager = PollManager
 
+    val l1 = parseInput(
+      s"""
+         |/list|
+         |""".stripMargin)
+
+    println(l1)
+
+    val rslL = manager.execute("rothaar", l1)
+
+    println(rslL)
 
     val c = parseInput(
       """
@@ -147,6 +159,8 @@ object Parser extends RegexParsers {
 
     val qId = rslAq
 
+
+
     val sP = parseInput(
       s"""
         |/start_poll ($rslC)
@@ -172,10 +186,27 @@ object Parser extends RegexParsers {
 
     println(rslA)
 
+
+    val rslL2 = manager.execute("rothaar", l1)
+
+    println(rslL2)
+
+    val r = parseInput(
+      s"""
+         |/result ($rslC)
+        |""".stripMargin)
+
+    println(r)
+
+    println(manager.execute("rothaar", r))
+
+
+
     val stP = parseInput(
       s"""
          |/stop_poll ($rslC)
          |""".stripMargin)
+
 
     val rslStpF = manager.execute("rothaar_fake", stP)
 
@@ -183,7 +214,15 @@ object Parser extends RegexParsers {
 
     val rslA1 = manager.execute("rothaar", l)
 
-    println(rslA1)
+    val e = parseInput(
+      s"""
+         |/end
+         |""".stripMargin)
+
+    println(e)
+
+    println(manager.execute("rothaar", e))
+
 
     /*val p =
       parse(createPoll,
@@ -205,9 +244,6 @@ object Parser extends RegexParsers {
       case Error(msg,_) => println("ERROR: " + msg)
     }
 */
-    println(l)
-
-    PollManager.execute("rothaar", l)
   }
 }
 

@@ -1,4 +1,4 @@
-package bot2.polls
+package bot.poll
 
 sealed trait Answer[T] {
   def answer: T

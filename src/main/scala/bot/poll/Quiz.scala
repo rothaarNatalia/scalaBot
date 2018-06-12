@@ -1,4 +1,4 @@
-package bot2.polls
+package bot.poll
 
 
 case class Quiz(quiz: String,
@@ -6,7 +6,7 @@ case class Quiz(quiz: String,
                 answers: Vector[(Option[UserId], Answer[_])],
                 pAnswers: List[String]) {
 
-  private val possibleAnswers = (1L to pAnswers.length) zip (pAnswers) toMap
+  val possibleAnswers = (1L to pAnswers.length) zip (pAnswers) toMap
 
   import QuizType._
 

@@ -1,4 +1,4 @@
-package bot2.polls
+package bot.poll
 
 import com.github.nscala_time.time.Imports._
 
@@ -43,25 +43,23 @@ case class Poll(userId: UserId,
 
       val starCount = 13 //magic
 
-//      val usrAswrs = q.answers.view.flatMap(v => v._2 map(a => (v._1, a))).groupBy(_._2)
+      val usrAswrs = q.answers.view.collect{
+        case (usr, Answer(x: Long)) => List((usr, x))
+        case (usr,Answer(xs: List[_])) => xs.collect({case a: Long => (usr, a)})
+      }.flatten.groupBy(_._2)
 
-/*      val usrAswrs = q.answers.view.map( v =>  v._2 match {
-        case Answer(x: Long) => (v._1, x)
-        case Answer(xs: List[_]) => xs.collect({case a: Long => (v._1, a)})
-      })
+      val aswrs = usrAswrs.map(v => (v._1, v._2.size))
 
-      //  v._2 map(a => (v._1, a))).groupBy(_._2)
+      val totalVotes = aswrs.view map (_._2) sum
 
-      val aswrs = usrAswrs.map(mr => (mr._1, mr._2.length))
-
-      val histo = aswrs.view.map(v =>  {s"$v._1   ${ "*" * (starCount / v._2)} \n"}).reduce(_ + _)
+      val histo = aswrs.view.map(v =>  {s"${q.possibleAnswers(v._1)}   ${ "*" * (v._2 * starCount / totalVotes)} \n"}).reduce(_ + _)
 
 
       val usrs = if (isAnonymous == Some(true)) ""
-                 else usrAswrs.view.map(v => s"${v._1}: ${v._2.view.map(_._1.getOrElse("") + " ")} \n") reduce(_ + _)
+                 else usrAswrs.view.map(v => s"${q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduce(_ + _)} \n") reduce(_ + _)
 
-      histo + "\n" + usrs*/
-    ""
+      histo + "\n" + usrs
+
     }
 
     def list(q: Quiz): String = {
@@ -69,13 +67,12 @@ case class Poll(userId: UserId,
       if (isAnonymous == Some(true))
         q.answers.view.map(_._2 + " ") reduce(_ + _)
       else
-        q.answers.view.map(v => s"${(v._1).getOrElse("")}: $v._2 \n") reduce(_ + _)
+        q.answers.view.map(v => s"${(v._1).getOrElse("")}: ${v._2} \n") reduce(_ + _)
 
     }
 
-    val vsb = visibility.getOrElse(Visibility.AFTERSTOP)
+    if ((visibility == Some(Visibility.CONTINUOUS)) || ((visibility == Some(Visibility.AFTERSTOP)) && (!isActive))){
 
-    if ((vsb == Some(Visibility.CONTINUOUS)) || ((vsb == Some(Visibility.AFTERSTOP)) && (!isActive))){
       questions.view map (q => {
         s"""Die Frage mit Id ${q._1}
            |Das Ergebniss:
@@ -121,32 +118,6 @@ case class Poll(userId: UserId,
                                     )}
       case _ => None
     }
-
-
-/*    if ((!questions.contains(qId)) ||
-        (currentDate <= dateFrom.getOrElse(currentDate)) ||
-        (currentDate >= dateTo.getOrElse(currentDate)))
-      None
-
-    if (answered(qId).contains(userId))
-      None
-
-    val quiz: Quiz = questions(qId)
-
-    val result =  if(isAnonymous.getOrElse(true))
-                      quiz.answer(None, a.distinct: _ *)
-                  else
-                      quiz.answer(Some(userId), a.distinct: _ *)
-
-    if (result.nonEmpty) {
-      val usrs = answered(qId)
-      answered.updated(qId, usrs ++ userId)
-      Some(quiz.copy(answers = ( result.get +: quiz.answers)))
-    }
-    else
-      None
-    */
-
   }
 
   def view: String = {
