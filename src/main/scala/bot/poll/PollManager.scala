@@ -174,8 +174,8 @@ object PollManager {
                                           answered = Map.empty)
 
                                         addPoll(userId = user, poll = p)
-                                          //.flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
-                                          .flatMap(poll => {polls = polls + poll; Some(s"${poll._1}")})
+                                          .flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
+                                          //.flatMap(poll => {polls = polls + poll; Some(s"${poll._1}")})
                                     }
         case dltPoll: DeletePoll => {
                                         deletePoll(userId = user, id = dltPoll.id)
@@ -214,15 +214,15 @@ object PollManager {
                                     Some(s"Raus aus dem Kontext von der Umfrage ${e._2}")})
                               }
         case addQuiz: AddQuestion => {
-          val q = Quiz( addQuiz.quiz,
-            addQuiz.questionType.getOrElse(QuizType.OPEN),
-            Vector.empty,
-            addQuiz.pAnswers)
+                                        val q = Quiz( addQuiz.quiz,
+                                          addQuiz.questionType.getOrElse(QuizType.OPEN),
+                                          Vector.empty,
+                                          addQuiz.pAnswers)
 
-          addQuestion(userId = user, q = q)
-            //.flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._3} war hinzugefuegt")})
-            .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"${p._3}")})
-        }
+                                        addQuestion(userId = user, q = q)
+                                          .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._3} war hinzugefuegt")})
+                                          //.flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"${p._3}")})
+                                      }
         case dltQuiz: DeleteQuestion => {
                                           deleteQuestion(user, dltQuiz.id).
                                             flatMap(p => {polls = polls.updated(p._1, p._2);
