@@ -77,10 +77,9 @@ object PollManager {
 
   private def list(userId: UserId): Option[String] = {
 
-    if (polls.isEmpty)
-      Some("Es gibt keine Umfragen")
-    else
-      Some("Liste von den Umfragen: \n" + polls.map(p => s"#${p._1} ${p._2.name}\n").reduce(_ + _))
+      Some("Liste von den Umfragen: \n" +
+              polls.map(p => s"#${p._1} ${p._2.name}\n").reduceOption(_ + _).
+                getOrElse("Es gibt keine Umfragen"))
 
   }
 

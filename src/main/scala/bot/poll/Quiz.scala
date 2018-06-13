@@ -19,7 +19,7 @@ case class Quiz(quiz: String,
                             false
                           else
                           x.view.collect({case a: Long => possibleAnswers.contains(a)
-                                          case _ => false}) reduce (_ && _)}
+                                          case _ => false}) reduceOption (_ && _) getOrElse (false)}
                         case _ => false
                     }}
 
@@ -44,11 +44,12 @@ case class Quiz(quiz: String,
   }
 
   def view = {
+
     s"""
        |Die Frage $quiz
        |Der Typ ${quizType}
        |Die moegliche Antworten sind
-       |${pAnswers.reduce(_ + " " + _)}
+       |${pAnswers.reduceOption(_ + " " + _).getOrElse("")}
      """.stripMargin
   }
 

@@ -48,26 +48,34 @@ case class Poll(userId: UserId,
         case (usr,Answer(xs: List[_])) => xs.collect({case a: Long => (usr, a)})
       }.flatten.groupBy(_._2)
 
-      val aswrs = usrAswrs.map(v => (v._1, v._2.size))
+      val answered = usrAswrs.map(v => (v._1, v._2.size))
 
-      val totalVotes = aswrs.view map (_._2) sum
+      val ids = answered.keySet
+      val nonAnswered = q.possibleAnswers withFilter (id => !ids.contains(id._1)) map (v => (v._1, 0))
 
-      val histo = aswrs.view.map(v =>  {s"${q.possibleAnswers(v._1)}   ${ "*" * (v._2 * starCount / totalVotes)} \n"}).reduce(_ + _)
+      val totalVotes = answered.view map (_._2) sum
 
+      val histogram = (answered ++ nonAnswered).view.
+                      map(v =>  {s"${q.possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
+                        reduceOption(_ + _) getOrElse("")
 
-      val usrs = if (isAnonymous == Some(true)) ""
-                 else usrAswrs.view.map(v => s"${q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduce(_ + _)} \n") reduce(_ + _)
+      val users = if (isAnonymous == Some(true))
+                     ""
+                 else
+                    (usrAswrs).view.
+                       map(v => s"${q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduceOption(_ + _) getOrElse("")} \n").
+                        reduceOption(_ + _) getOrElse ("")
 
-      histo + "\n" + usrs
+      histogram + "\n" + users
 
     }
 
     def list(q: Quiz): String = {
 
       if (isAnonymous == Some(true))
-        q.answers.view.map(_._2 + " ") reduce(_ + _)
+        q.answers.view.map(_._2 + " ") reduceOption(_ + _) getOrElse ("")
       else
-        q.answers.view.map(v => s"${(v._1).getOrElse("")}: ${v._2} \n") reduce(_ + _)
+        q.answers.view.map(v => s"${(v._1).getOrElse("")}: ${v._2} \n") reduceOption(_ + _) getOrElse ("")
 
     }
 
@@ -84,7 +92,7 @@ case class Poll(userId: UserId,
         }
            |
          """.stripMargin
-      }) reduce(_ + _)
+      }) reduceOption (_ + _) getOrElse ("Es gibt keine Fragen in der Umfrage")
     }
     else
       "Noch keine Ergebnisse"
@@ -125,7 +133,7 @@ case class Poll(userId: UserId,
     s"""
        |Die Umfrage $name
        |Die Fragen:
-       |${questions.view.map(v => v._2.quiz + "\n").reduce(_ + _)}
+       |${questions.view.map(v => v._2.quiz + "\n").reduceOption(_ + _) getOrElse("")}
        |
      """.stripMargin
   }
