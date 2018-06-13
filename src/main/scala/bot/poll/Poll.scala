@@ -56,14 +56,14 @@ case class Poll(userId: UserId,
       val totalVotes = answered.view map (_._2) sum
 
       val histogram = (answered ++ nonAnswered).view.
-                      map(v =>  {s"${q.possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
+                      map(v =>  {s"${"# "+ v._1 + ": " + q.possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
                         reduceOption(_ + _) getOrElse("")
 
       val users = if (isAnonymous == Some(true))
                      ""
                  else
                     (usrAswrs).view.
-                       map(v => s"${q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduceOption(_ + _) getOrElse("")} \n").
+                       map(v => s"${"# "+ v._1 + ": " +q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduceOption(_ + _) getOrElse("")} \n").
                         reduceOption(_ + _) getOrElse ("")
 
       histogram + "\n" + users
