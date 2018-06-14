@@ -173,8 +173,8 @@ object PollManager {
                                           answered = Map.empty)
 
                                         addPoll(userId = user, poll = p)
-                                          .flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
-                                          //.flatMap(poll => {polls = polls + poll; Some(s"${poll._1}")})
+                                          //.flatMap(poll => {polls = polls + poll; Some(s"Die Umfrage mit Id ${poll._1} war erstellt")})
+                                          .flatMap(poll => {polls = polls + poll; Some(s"${poll._1}")})
                                     }
         case dltPoll: DeletePoll => {
                                         deletePoll(userId = user, id = dltPoll.id)
@@ -219,8 +219,8 @@ object PollManager {
                                           addQuiz.pAnswers)
 
                                         addQuestion(userId = user, q = q)
-                                          .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._3} war hinzugefuegt")})
-                                          //.flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"${p._3}")})
+                                          //.flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"Die Frage mit Id ${p._3} war hinzugefuegt")})
+                                          .flatMap(p => {polls = polls.updated(p._1, p._2); Some(s"${p._3}")})
                                       }
         case dltQuiz: DeleteQuestion => {
                                           deleteQuestion(user, dltQuiz.id).

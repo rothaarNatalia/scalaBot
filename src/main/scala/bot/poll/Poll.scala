@@ -34,7 +34,7 @@ case class Poll(userId: UserId,
     seqCheck && dFCheck && dTCheck
 
   }
-
+/*
   def result: String = {
 
     import QuizType._
@@ -56,14 +56,14 @@ case class Poll(userId: UserId,
       val totalVotes = answered.view map (_._2) sum
 
       val histogram = (answered ++ nonAnswered).view.
-                      map(v =>  {s"${"# "+ v._1 + ": " + q.possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
+                      map(v =>  {s"${"# "+ v._1 + q.possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
                         reduceOption(_ + _) getOrElse("")
 
       val users = if (isAnonymous == Some(true))
                      ""
                  else
                     (usrAswrs).view.
-                       map(v => s"${"# "+ v._1 + ": " +q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduceOption(_ + _) getOrElse("")} \n").
+                       map(v => s"${"# "+ v._1  +q.possibleAnswers(v._1)}: ${v._2.view.map(_._1.getOrElse("") + " ") reduceOption(_ + _) getOrElse("")} \n").
                         reduceOption(_ + _) getOrElse ("")
 
       histogram + "\n" + users
@@ -98,6 +98,24 @@ case class Poll(userId: UserId,
       "Noch keine Ergebnisse"
 
   }
+*/
+
+  def result: String = {
+
+    if ((visibility == Some(Visibility.CONTINUOUS)) || ((visibility == Some(Visibility.AFTERSTOP)) && (!isActive))){
+
+      questions.view map (q => {
+        s"""Die Frage mit Id ${q._1}
+           |Das Ergebniss:
+           |${q._2.result(isAnonymous.getOrElse(true))}
+           |
+         """.stripMargin
+      }) reduceOption (_ + _) getOrElse ("Es gibt keine Fragen in der Umfrage")
+    }
+    else
+      "Noch keine Ergebnisse"
+  }
+
 
   def answer(userId: UserId, qId: Long, a: Answer[_]): Option[Quiz] = {
 
