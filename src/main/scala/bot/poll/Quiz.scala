@@ -10,31 +10,30 @@ case class Quiz(quiz: String,
 
   import QuizType._
 
-  private def answerIsCorrect(a: Answer[_]): Boolean = {
-
-    quizType match {
-      case MULTI => {a match {
-                        case Answer(x: List[_]) => {
-                          if (!(x.distinct.length == x.length))
-                            false
-                          else
-                          x.view.collect({case a: Long => possibleAnswers.contains(a)
-                                          case _ => false}) reduceOption (_ && _) getOrElse (false)}
-                        case _ => false
-                    }}
-
-      case CHOICE => { a match {
-                          case Answer(xs: Long) => possibleAnswers.contains(xs)
-                          case _ => false
-                        }
-
-      }
-      case OPEN => true
-    }
-
-  }
 
   def answer(u: Option[UserId], a: Answer[_]): Option[(Option[UserId],Answer[_])] = {
+
+    def answerIsCorrect(a: Answer[_]): Boolean = {
+
+      quizType match {
+        case MULTI => {a match {
+          case Answer(x: List[_]) => {
+            if (!(x.distinct.length == x.length))
+              false
+            else
+              x.view.collect({case a: Long => possibleAnswers.contains(a)
+              case _ => false}) reduceOption (_ && _) getOrElse (false)}
+        }}
+
+        case CHOICE | MULTI => { a match {
+          case Answer(xs: Long) => possibleAnswers.contains(xs)
+        }
+
+        }
+        case OPEN => true
+      }
+
+    }
 
     if (answerIsCorrect(a))
         Some(u, a)
@@ -70,9 +69,10 @@ case class Quiz(quiz: String,
       val nonAnswered = possibleAnswers withFilter (id => !ids.contains(id._1)) map (v => (v._1, 0))
 
       val totalVotes = answered.view map (_._2) sum
+      val k = if (totalVotes == 0) 1 else starCount/totalVotes
 
       val histogram = (answered ++ nonAnswered).view.
-        map(v =>  {s"${"# "+ v._1 + ": " + possibleAnswers(v._1)}   ${ "*" * ((v._2 * starCount)/totalVotes)} \n"}).
+        map(v =>  {s"${"# "+ v._1 + ": " + possibleAnswers(v._1)}   ${ "*" * (k * v._2)} \n"}).
         reduceOption(_ + _) getOrElse("")
 
       val users = if (isAnonymous)

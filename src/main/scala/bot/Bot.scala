@@ -18,7 +18,7 @@ object Bot extends TelegramBot with Polling with Commands {
 
     implicit msg => reply({
       val cmd = parser.parseInput(msg.text.getOrElse(""))
-      manager.execute(msg.from.flatMap(_.username).getOrElse(""), cmd)
+      manager.execute(msg.from.flatMap(u => Some(u.id.toString)).getOrElse(""), cmd)
     })
   }
 }
