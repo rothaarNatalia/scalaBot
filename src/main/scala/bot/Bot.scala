@@ -2,25 +2,27 @@ package bot
 
 import bot.poll.PollManager
 import info.mukel.telegrambot4s.api.declarative.Commands
-import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
+import info.mukel.telegrambot4s.api.{TelegramBot, Webhook}
 
-object Bot extends TelegramBot with Polling with Commands {
+object Bot extends TelegramBot with Webhook with Commands {
 
-  def token = ""
+  def token = "549906144:AAFizyWrcNfep-fxlYT6CZuou1l-hU0rw4s"
+
+  //override val port = 8443
+  override val port = 8080
+  override val webhookUrl = "https://6b68e278.ngrok.io"
 
   val parser = Parser
   val manager = PollManager
 
-  onCommand("/create_poll", "/list", "/delete_poll",
-            "/start_poll", "/stop_poll", "/result",
-            "/begin", "/end", "/add_question",
-            "/delete_question", "/view", "/answer") {
-
-    implicit msg => reply({
+  onMessage { implicit msg =>
+    reply({
       val cmd = parser.parseInput(msg.text.getOrElse(""))
       manager.execute(msg.from.flatMap(u => Some(u.id.toString)).getOrElse(""), cmd)
     })
-  }
+    }
+
+
 }
 
 object App {
