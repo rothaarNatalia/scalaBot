@@ -26,11 +26,12 @@ case class Quiz(quiz: String,
         }}
 
         case CHOICE | MULTI => { a match {
-          case Answer(xs: Long) => possibleAnswers.contains(xs)
+          case Answer((xs: Long) :: Nil) => possibleAnswers.contains(xs)
         }
 
         }
         case OPEN => true
+        case _ => false
       }
 
     }
@@ -89,9 +90,9 @@ case class Quiz(quiz: String,
     def list: String = {
 
       if (isAnonymous)
-        answers.view.map(_._2 + " ") reduceOption(_ + _) getOrElse ("")
+        answers.view.map(_._2.answer + " ") reduceOption(_ + _) getOrElse ("")
       else
-        answers.view.map(v => s"${(v._1).getOrElse("")}: ${v._2} \n") reduceOption(_ + _) getOrElse ("")
+        answers.view.map(v => s"${(v._1).getOrElse("")}: ${v._2.answer} \n") reduceOption(_ + _) getOrElse ("")
 
     }
 

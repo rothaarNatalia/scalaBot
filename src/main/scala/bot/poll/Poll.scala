@@ -57,9 +57,7 @@ case class Poll(userId: UserId,
     val currentDate = DateTime.now()
 
     val userQuiz = (for {
-                          quiz <- questions if ((quiz._1 == qId) &&
-                                                (currentDate >= dateFrom.getOrElse(currentDate)) &&
-                                                (currentDate <= dateTo.getOrElse(currentDate)))
+                          quiz <- questions if ((quiz._1 == qId) && (isActive))
                           users <- answered if (answered.contains(qId))
                         } yield (quiz, users._2.contains(userId))).
                       headOption
