@@ -18,14 +18,6 @@ object Answer {
 
   }
 
-  implicit class LongAnswer(val a: Long) extends Answer[Long] {
-
-    override def answer: Long = a
-
-    override def toString = a.toString
-
-  }
-
   implicit class ListLongAnswer(val a: List[Long]) extends Answer[List[Long]] {
 
     override def answer: List[Long] = a

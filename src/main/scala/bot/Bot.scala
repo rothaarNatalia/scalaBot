@@ -10,7 +10,7 @@ object Bot extends TelegramBot with Webhook with Commands {
 
   //override val port = 8443
   override val port = 8080
-  override val webhookUrl = "https://6b68e278.ngrok.io"
+  override val webhookUrl = "https://15e40d17.ngrok.io"
 
   val parser = Parser
   val manager = PollManager

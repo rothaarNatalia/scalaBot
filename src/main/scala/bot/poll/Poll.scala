@@ -84,7 +84,7 @@ case class Poll(userId: UserId,
     s"""
        |Die Umfrage $name
        |Die Fragen:
-       |${questions.view.map(v => v._2.quiz + "\n").reduceOption(_ + _) getOrElse("")}
+       |${questions.view.map(v => v._2.view + "\n").reduceOption(_ + _) getOrElse("")}
        |
      """.stripMargin
   }

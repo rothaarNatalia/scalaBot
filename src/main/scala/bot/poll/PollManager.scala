@@ -128,6 +128,8 @@ object PollManager {
 
   private def answer(userId: UserId, qId: Long, a: Answer[_]): Option[(Long, Poll)] = {
 
+    //TODO activate by time
+
     val usersPoll = ( for{
                           session <- sessions if (session._1 == userId)
                           poll <- polls if (poll._1 == session._2)

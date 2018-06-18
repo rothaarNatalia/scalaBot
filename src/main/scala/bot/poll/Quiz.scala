@@ -15,7 +15,7 @@ case class Quiz(quiz: String,
 
     def answerIsCorrect(a: Answer[_]): Boolean = {
 
-      quizType match {
+      {quizType match {
         case MULTI => {a match {
           case Answer(x: List[_]) => {
             if (!(x.distinct.length == x.length))
@@ -25,14 +25,16 @@ case class Quiz(quiz: String,
               case _ => false}) reduceOption (_ && _) getOrElse (false)}
         }}
 
-        case CHOICE | MULTI => { a match {
+        case CHOICE => { a match {
           case Answer((xs: Long) :: Nil) => possibleAnswers.contains(xs)
-        }
-
+          }
         }
         case OPEN => true
+      }} match {
+        case b: Boolean => b
         case _ => false
       }
+
 
     }
 
